@@ -30,9 +30,15 @@ module.exports = function (db) {
         })
     }
 
+    router.get('/logout', helpers.isLoggedIn, function (req, res, next) {
+        req.session.destroy((err) => {
+            res.redirect('/login')
+        })
+    })
+
     router.get('/', helpers.isLoggedIn, function (req, res, next) {
         const mode = 'dashboard'
-        res.render('index', {mode})
+        res.render('index', {mode, user: req.session.user})
         // const url = req.url == '/' ? '/?page=1' : req.url;
         // const page = req.query.page || 1;
         // const limit = 5;
@@ -164,42 +170,42 @@ module.exports = function (db) {
 
     router.get('/blank', (req, res) => {
         const mode = 'blank'
-        res.render('blank', {mode})
+        res.render('blank', {mode, user: req.session.user})
     })
 
     router.get('/buy', (req, res) => {
         const mode = 'buy'
-        res.render('buy', {mode})
+        res.render('buy', {mode, user: req.session.user})
     })
 
     router.get('/sell', (req, res) => {
         const mode = 'sell'
-        res.render('sell', {mode})
+        res.render('sell', {mode, user: req.session.user})
     })
 
     router.get('/warehouse', (req, res) => {
         const mode = 'warehouse'
-        res.render('warehouse', {mode})
+        res.render('warehouse', {mode, user: req.session.user})
     })
 
     router.get('/inventory', (req, res) => {
         const mode = 'inventory'
-        res.render('inventory', {mode})
+        res.render('inventory', {mode, user: req.session.user})
     })
 
     router.get('/supplier', (req, res) => {
         const mode= 'supplier'
-        res.render('supplier', {mode})
+        res.render('supplier', {mode, user: req.session.user})
     })
 
     router.get('/users', (req, res) => {
         const mode = 'users'
-        res.render('users', {mode})
+        res.render('users', {mode, user: req.session.user})
     })
 
     router.get('/unit', (req, res) => {
         const mode = 'unit'
-        res.render('unit', {mode})
+        res.render('unit', {mode, user: req.session.user})
     })
 
     router.get('/register', (req, res) => {
@@ -217,25 +223,30 @@ module.exports = function (db) {
                 db.query('INSERT INTO users VALUES ($1, $2, $3)', [email, username, hash], (err) => {
                     if(err) return res.send(err)
                 })
-                res.redirect('/login')
+                res.redirect('/login', {info: req.flash('info')})
             });
         })
         
     })
 
     router.get('/login', (req, res) => {
-        const mode = 'login'
-        res.render('login', {mode})
+        res.render('login', {info: req.flash('info')})
     })
 
     router.post('/login', (req, res) => {
         const {email, password} = req.body
         db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
             if (err) return res.send(err)
-            if (data.rows.length == 0) return res.send("Email tidak terdaftar") 
+            if (data.rows.length == 0) {
+                req.flash('info', 'Email Not Registered')
+                return res.redirect('/login');
+            }
             bcrypt.compare(password, data.rows[0].password, function(err, result) {
                 if (err) return res.send(err)
-                if(!result) return res.send("Password salah")
+                if(!result){
+                    req.flash('info', 'Password Incorrect')
+                    return res.redirect('/login');
+                }
 
                 req.session.user = data.rows[0]
                 res.redirect('/')

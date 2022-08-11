@@ -4,9 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session')
-
-
-
+var flash = require('connect-flash');
 
 async function main() {
   try {
@@ -40,7 +38,8 @@ async function main() {
       secret: 'zhafran',
       resave: false,
       saveUninitialized: true,
-    }))
+    }));
+    app.use(flash());
 
     app.use('/', indexRouter);
     app.use('/data', dataRouter);
