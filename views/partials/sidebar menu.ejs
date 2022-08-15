@@ -12,12 +12,14 @@
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
+    <% if (user.role == "admin") {%>
     <!-- Nav Item - Dashboard -->
     <li class="nav-item <%= mode == 'dashboard' ? 'active' : ''%>">
         <a class="nav-link" href="/">
             <i class="fa-solid fa-table-columns"></i>
             <span>Dashboard</span></a>
     </li>
+    <% } %>
 
     <!-- Divider -->
     <hr class="sidebar-divider">
@@ -38,6 +40,8 @@
             <i class="fa-solid fa-cash-register"></i>
             <span>Sell</span></a>
     </li>
+
+    <% if (user.role == "admin") {%>
 
     <!-- Divider -->
     <hr class="sidebar-divider">
@@ -85,6 +89,8 @@
             </div>
         </div>
     </li>
+
+    <% } %>
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">

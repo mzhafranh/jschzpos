@@ -1,5 +1,4 @@
 <%- include('partials/header')%>
-
     <body id="page-top">
         <!-- Page Wrapper -->
         <div id="wrapper">
@@ -15,8 +14,306 @@
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                                     <h1 class="h3 mb-0 text-gray-800">Unit</h1>
                                 </div>
+                                <form id="form-search">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h2>Search</h2>
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <div class="row mb-3">
+                                                <label for="searchId" class="col-sm-2 col-form-label">ID satuan</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="searchId"
+                                                        name="searchId">
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="searchNama" class="col-sm-2 col-form-label">Nama
+                                                    satuan</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="searchNama"
+                                                        name="searchNama">
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="searchKeterangan" class="col-sm-2 col-form-label">Keterangan
+                                                    satuan</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="searchKeterangan"
+                                                        name="searchKeterangan">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <button type="submit" class="btn btn-primary">Cari</button>
+                                            <button class="btn btn-warning" id="form-reset" onClick="resetForm()"
+                                                style="color: #ffffff;">Reset</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                                    <h1 class="h3 mb-0 mt-3 text-gray-800">Result</h1>
+                                </div>
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-primary">
+
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                                <ul class = "pagination mt-3">
+
+                                </ul>
+
+                                <input type="hidden" name="idObj" id="idObj" value="">
+                                <form id="form-data">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h2>Form</h2>
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <div class="row mb-3">
+                                                <label for="id_satuan" class="col-sm-2 col-form-label">ID satuan</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="id_satuan"
+                                                        name="id_satuan" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="nama_satuan" class="col-sm-2 col-form-label">Nama
+                                                    satuan</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="nama_satuan"
+                                                        name="nama_satuan" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="keterangan" class="col-sm-2 col-form-label">Keterangan
+                                                    </label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="keterangan" name="keterangan" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <button type="submit" class="btn btn-primary">Simpan</button>
+                                        </div>
+                                    </div>
+                                </form>
+
                             </div>
+
+                            <p></p>
+
                     </div>
                     <%- include('partials/footer')%>
-                </div>
+                        <script>
+                            const readData = (params) => {
+                                fetch(`http://localhost:3000/data/satuan?${new URLSearchParams(params).toString()}`).then((response) => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.json();
+                                })
+                                    .then((response) => {
+                                        let newParams = { ...params };
+                                        let htmlThead = '';
+                                        htmlThead += `<tr>`
+                                        if (params.sortBy == "id_satuan" && params.order == "asc") {
+                                            newParams.order = "desc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>ID satuan<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                        } else if (params.sortBy == "id_satuan" && params.order == "desc") {
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>ID satuan<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                        } else {
+                                            newParams.sortBy = "id_satuan";
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>ID satuan<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                        }
+
+                                        if (params.sortBy == "nama_satuan" && params.order == "asc") {
+                                            newParams.order = "desc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Nama satuan<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                        } else if (params.sortBy == "nama_satuan" && params.order == "desc") {
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Nama satuan<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                        } else {
+                                            newParams.sortBy = "nama_satuan";
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Nama satuan<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                        }
+
+                                        if (params.sortBy == "keterangan" && params.order == "asc") {
+                                            newParams.order = "desc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Keterangan<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                        } else if (params.sortBy == "keterangan" && params.order == "desc") {
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Keterangan<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                        } else {
+                                            newParams.sortBy = "keterangan";
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Keterangan<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                        }
+
+                                        htmlThead += `<th><button class = "btn">Action</button></th>`
+                                        htmlThead += `</tr>`
+
+                                        document.querySelector('table thead').innerHTML = htmlThead;
+
+                                        let htmlTbody = '';
+                                        response.data.forEach((item, index) => {
+
+                                            htmlTbody += `
+                                        <tr>
+                                            <td>${item.id_satuan}</td>
+                                            <td>${item.nama_satuan}</td>
+                                            <td>${item.keterangan}</td>
+                                            <td><button type="button" class="btn btn-warning" style="color: #ffffff;" onClick="editData('${item.id_satuan}')"><i class="fa-solid fa-pencil"></i></button>
+                                            <button type="button" class="btn btn-danger" onClick="deleteData('${item.id_satuan}')"><i class="fa-solid fa-trash-can"></i></button></td>
+                                        </tr>
+                                        `
+                                        })
+                                        document.querySelector('table tbody').innerHTML = htmlTbody
+
+                                        let paging = '';
+                                        params.page = 1;
+                                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&laquo;</span></button>`
+                                        for (let i = 1; i <= response.totalPages; i++) {
+                                            if (response.page == i) {
+                                                params.page = i;
+                                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
+                                            }
+                                            else {
+                                                params.page = i;
+                                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
+                                            }
+                                        }
+                                        params.page = response.totalPages;
+                                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&raquo;</span></button>`
+                                        document.querySelector('.pagination').innerHTML = paging
+                                    })
+                                    .catch((err) => {
+                                        console.error(err);
+                                    });
+                            }
+
+                            const resetForm = () => {
+                                // document.getElementById('idObj').value = ''
+                                document.getElementById("form-search").reset();
+                            }
+
+                            readData({ sortBy: "id_satuan", order: "asc" })
+
+                            const saveData = (idObj, id_satuan, nama_satuan, keterangan) => {
+
+                                if (idObj) {
+                                    fetch(`http://localhost:3000/data/satuan/edit`, {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({ idObj, id_satuan, nama_satuan, keterangan })
+                                    }).then((response) => {
+                                        if (!response.ok) {
+                                            throw new Error(`HTTP error! Status: ${response.status}`);
+                                        }
+                                        return response.json();
+                                    }).then((response) => {
+                                        readData({ sortBy: "id_satuan", order: "asc" })
+                                        document.getElementById('idObj').value = ''
+                                        document.getElementById("form-data").reset();
+                                    });
+                                } else {
+                                    fetch("http://localhost:3000/data/satuan/add/", {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({ id_satuan, nama_satuan, keterangan })
+                                    }).then((response) => {
+                                        if (!response.ok) {
+                                            throw new Error(`HTTP error! Status: ${response.status}`);
+                                        }
+                                        return response.json();
+                                    }).then((response) => {
+                                        readData({ sortBy: "id_satuan", order: "asc" })
+                                        document.getElementById("form-data").reset();
+                                    });
+                                }
+                            }
+
+
+                            const editData = (id_satuan) => {
+                                fetch(`http://localhost:3000/data/satuan?${new URLSearchParams({ id_satuan, sortBy: "id_satuan", order: "asc" }).toString()}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    }
+                                }).then((response) => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.json();
+                                }).then((response) => {
+                                    document.getElementById('idObj').value = response.data[0].id_satuan
+                                    document.getElementById('id_satuan').value = response.data[0].id_satuan
+                                    document.getElementById('nama_satuan').value = response.data[0].nama_satuan
+                                    document.getElementById('keterangan').value = response.data[0].keterangan
+                                });
+                            }
+
+                            const deleteData = (id_satuan) => {
+                                fetch(`http://localhost:3000/data/satuan/delete/`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ id_satuan })
+                                }).then((response) => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.json();
+                                }).then((response) => {
+                                    readData({ sortBy: "id_satuan", order: "asc" })
+                                });
+                            }
+
+                            document.getElementById('form-data').addEventListener('submit', function (event) {
+                                event.preventDefault();
+                                const idObj = document.getElementById('idObj').value
+                                const id_satuan = document.getElementById('id_satuan').value
+                                const nama_satuan = document.getElementById('nama_satuan').value
+                                const keterangan = document.getElementById('keterangan').value
+                                saveData(idObj, id_satuan, nama_satuan, keterangan)
+                            })
+
+                            document.getElementById('form-search').addEventListener('submit', function (event) {
+                                event.preventDefault();
+                                const id_satuan = document.getElementById('searchId').value
+                                const nama_satuan = document.getElementById('searchNama').value
+                                const keterangan = document.getElementById('searchKeterangan').value
+                                const sortBy = "id_satuan";
+                                const order = "asc";
+                                let params = { id_satuan, nama_satuan, keterangan, sortBy, order }
+                                readData(params)
+                            })
+
+                        </script>
     </body>
+
+    </html>

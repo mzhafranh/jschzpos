@@ -12,11 +12,212 @@
                             <!-- Begin Page Content -->
                             <div class="container-fluid">
                                 <!-- Page Heading -->
+                                <input type="hidden" name = "user" id="user" value="<%= user.username %>">
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                                     <h1 class="h3 mb-0 text-gray-800">Users</h1>
                                 </div>
+                                <form id="form-search">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h2>Search</h2>
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <div class="row mb-3">
+                                                <label for="searchEmail" class="col-sm-2 col-form-label">Email</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="searchEmail"
+                                                        name="searchEmail">
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="searchUsername" class="col-sm-2 col-form-label">Username
+                                                </label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="searchUsername"
+                                                        name="searchUsername">
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="searchRole" class="col-sm-2 col-form-label">Role
+                                                </label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="searchRole"
+                                                        name="searchRole">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <button type="submit" class="btn btn-primary">Cari</button>
+                                            <button class="btn btn-warning" id="form-reset" onClick="resetForm()"
+                                                style="color: #ffffff;">Reset</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                                    <h1 class="h3 mb-0 mt-3 text-gray-800">Result</h1>
+                                </div>
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-primary">
+
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                                <ul class="pagination mt-3">
+
+                                </ul>
+                                <a href="/register" class="btn btn-primary">Register</a>
                             </div>
+
+
+
+
+                            <p></p>
+
                     </div>
                     <%- include('partials/footer')%>
-                </div>
+                        <script>
+                            const readData = (params) => {
+                                fetch(`http://localhost:3000/data/users?${new URLSearchParams(params).toString()}`).then((response) => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.json();
+                                })
+                                    .then((response) => {
+                                        let newParams = { ...params };
+                                        let htmlThead = '';
+                                        htmlThead += `<tr>`
+                                        if (params.sortBy == "email" && params.order == "asc") {
+                                            newParams.order = "desc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                        } else if (params.sortBy == "email" && params.order == "desc") {
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                        } else {
+                                            newParams.sortBy = "email";
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                        }
+
+                                        if (params.sortBy == "username" && params.order == "asc") {
+                                            newParams.order = "desc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Username<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                        } else if (params.sortBy == "username" && params.order == "desc") {
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Username<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                        } else {
+                                            newParams.sortBy = "username";
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Username<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                        }
+
+                                        if (params.sortBy == "role" && params.order == "asc") {
+                                            newParams.order = "desc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                        } else if (params.sortBy == "role" && params.order == "desc") {
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                        } else {
+                                            newParams.sortBy = "role";
+                                            newParams.order = "asc";
+                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                        }
+
+                                        htmlThead += `<th><button class = "btn">Action</button></th>`
+                                        htmlThead += `</tr>`
+
+                                        document.querySelector('table thead').innerHTML = htmlThead;
+
+                                        let htmlTbody = '';
+                                        response.data.forEach((item, index) => {
+                                            if (document.getElementById('user').value == item.username) {
+                                                htmlTbody += `
+                                        <tr>
+                                            <td>${item.email}</td>
+                                            <td>${item.username}</td>
+                                            <td>${item.role}</td>
+                                            <td></td>
+                                        </tr>
+                                        `
+                                            } else {
+                                                htmlTbody += `
+                                        <tr>
+                                            <td>${item.email}</td>
+                                            <td>${item.username}</td>
+                                            <td>${item.role}</td>
+                                            <td><button type="button" class="btn btn-danger" onClick="deleteData('${item.email}')"><i class="fa-solid fa-trash-can"></i></button></td>
+                                        </tr>
+                                        `
+                                            }
+                                        })
+                                        document.querySelector('table tbody').innerHTML = htmlTbody
+
+                                        let paging = '';
+                                        params.page = 1;
+                                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&laquo;</span></button>`
+                                        for (let i = 1; i <= response.totalPages; i++) {
+                                            if (response.page == i) {
+                                                params.page = i;
+                                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
+                                            }
+                                            else {
+                                                params.page = i;
+                                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
+                                            }
+                                        }
+                                        params.page = response.totalPages;
+                                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&raquo;</span></button>`
+                                        document.querySelector('.pagination').innerHTML = paging
+                                    })
+                                    .catch((err) => {
+                                        console.error(err);
+                                    });
+                            }
+
+                            const resetForm = () => {
+                                // document.getElementById('idObj').value = ''
+                                document.getElementById("form-search").reset();
+                            }
+
+                            readData({ sortBy: "email", order: "asc" })
+
+                            const deleteData = (email) => {
+                                fetch(`http://localhost:3000/data/users/delete/`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ email })
+                                }).then((response) => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.json();
+                                }).then((response) => {
+                                    readData({ sortBy: "email", order: "asc" })
+                                });
+                            }
+
+                            document.getElementById('form-search').addEventListener('submit', function (event) {
+                                event.preventDefault();
+                                const email = document.getElementById('searchEmail').value
+                                const username = document.getElementById('searchUsername').value
+                                const role = document.getElementById('searchRole').value
+                                const sortBy = "email";
+                                const order = "asc";
+                                let params = { email, username, role, sortBy, order }
+                                readData(params)
+                            })
+
+                        </script>
     </body>
+
+    </html>

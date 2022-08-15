@@ -17,13 +17,13 @@ module.exports = function (db) {
             callback(err, data);
         })
     }
-    
+
     function update(newId, oldId, string, integer, float, date, boolean, callback) {
         db.query('UPDATE data SET id = $1, string = $2, integer = $3, float = $4, date = $5, boolean = $6 WHERE id = $7', [newId, string, integer, float, date, boolean, oldId], (err) => {
             callback(err);
         });
     }
-    
+
     function remove(id, callback) {
         db.query('DELETE FROM data WHERE id = $1', [id], (err) => {
             callback(err);
@@ -38,7 +38,7 @@ module.exports = function (db) {
 
     router.get('/', helpers.isLoggedIn, function (req, res, next) {
         const mode = 'dashboard'
-        res.render('index', {mode, user: req.session.user})
+        res.render('index', { mode, user: req.session.user })
         // const url = req.url == '/' ? '/?page=1' : req.url;
         // const page = req.query.page || 1;
         // const limit = 5;
@@ -49,7 +49,7 @@ module.exports = function (db) {
         // var count = 1;
         // var sortBy = req.query.sortBy == undefined ? `id` : req.query.sortBy;
         // var order = req.query.order == undefined ? `asc` : req.query.order;
-        
+
 
         // console.log(req.query)
         // console.log(filter)
@@ -170,89 +170,93 @@ module.exports = function (db) {
 
     router.get('/blank', (req, res) => {
         const mode = 'blank'
-        res.render('blank', {mode, user: req.session.user})
+        res.render('blank', { mode, user: req.session.user })
     })
 
     router.get('/buy', (req, res) => {
         const mode = 'buy'
-        res.render('buy', {mode, user: req.session.user})
+        res.render('buy', { mode, user: req.session.user })
     })
 
     router.get('/sell', (req, res) => {
         const mode = 'sell'
-        res.render('sell', {mode, user: req.session.user})
+        res.render('sell', { mode, user: req.session.user })
     })
 
     router.get('/warehouse', (req, res) => {
         const mode = 'warehouse'
-        res.render('warehouse', {mode, user: req.session.user})
+        res.render('warehouse', { mode, user: req.session.user })
     })
 
     router.get('/inventory', (req, res) => {
         const mode = 'inventory'
-        res.render('inventory', {mode, user: req.session.user})
+        res.render('inventory', { mode, user: req.session.user })
     })
 
     router.get('/supplier', (req, res) => {
-        const mode= 'supplier'
-        res.render('supplier', {mode, user: req.session.user})
+        const mode = 'supplier'
+        res.render('supplier', { mode, user: req.session.user })
     })
 
     router.get('/users', (req, res) => {
         const mode = 'users'
-        res.render('users', {mode, user: req.session.user})
+        res.render('users', { mode, user: req.session.user })
     })
 
     router.get('/unit', (req, res) => {
         const mode = 'unit'
-        res.render('unit', {mode, user: req.session.user})
+        res.render('unit', { mode, user: req.session.user })
     })
 
     router.get('/register', (req, res) => {
         const mode = 'register'
-        res.render('register', {mode})
+        res.render('register', { mode })
     })
 
     router.post('/register', (req, res) => {
-        const {email, username, password} = req.body
+        const { email, username, password, role } = req.body
         db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
             if (err) return res.send(err)
-            if (data.rows.length > 0) return res.send("Email sudah terdaftar") 
-            bcrypt.hash(password, saltRounds, function(err, hash) {
+            if (data.rows.length > 0) return res.send("Email sudah terdaftar")
+            bcrypt.hash(password, saltRounds, function (err, hash) {
                 if (err) return res.send(err)
-                db.query('INSERT INTO users VALUES ($1, $2, $3)', [email, username, hash], (err) => {
-                    if(err) return res.send(err)
+                db.query('INSERT INTO users VALUES ($1, $2, $3, $4)', [email, username, hash, role], (err) => {
+                    if (err) return res.send(err)
                 })
-                res.redirect('/login', {info: req.flash('info')})
+                res.redirect('/users')
             });
         })
-        
     })
 
     router.get('/login', (req, res) => {
-        res.render('login', {info: req.flash('info')})
+        res.render('login', { info: req.flash('info') })
     })
 
     router.post('/login', (req, res) => {
-        const {email, password} = req.body
+        const { email, password } = req.body
         db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
             if (err) return res.send(err)
             if (data.rows.length == 0) {
                 req.flash('info', 'Email Not Registered')
                 return res.redirect('/login');
             }
-            bcrypt.compare(password, data.rows[0].password, function(err, result) {
+            bcrypt.compare(password, data.rows[0].password, function (err, result) {
                 if (err) return res.send(err)
-                if(!result){
+                if (!result) {
                     req.flash('info', 'Password Incorrect')
                     return res.redirect('/login');
                 }
 
                 req.session.user = data.rows[0]
-                res.redirect('/')
+                if (req.session.user.role == "admin") {
+                    res.redirect('/')
+                }
+                if (req.session.user.role == "op") {
+                    res.redirect('/sell')
+                }
             });
         })
-        
+
     })
 
     return router;
