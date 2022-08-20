@@ -193,6 +193,54 @@ module.exports = function (db) {
         res.render('inventory', { mode, user: req.session.user })
     })
 
+    router.get('/inventoryadd', (req, res) => {
+        const mode = 'inventory'
+        res.render('inventoryadd', { mode, user: req.session.user })
+    })
+
+    router.post('/inventoryadd', (req, res) => {
+        const mode = 'inventory'
+
+        if (!req.files) {
+            return res.status(400).send("No files were uploaded.");
+          }
+
+          
+        console.log(req.files.gambar_varian)
+        const file = req.files.gambar_varian;
+        const path = __dirname + "/files/" + file.name;
+        const extensionName = path.extname(file.name);
+        const allowedExtension = ['.png', '.jpg', '.jpeg'];
+
+        const wheres = []
+        const values = []
+        var count = 1;
+
+        if (!allowedExtension.includes(extensionName)) {
+            return res.status(422).send("Invalid Image");
+        }
+
+        file.mv(path, (err) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+            return res.send({ status: "success", path: path });
+        });
+
+        const { id_varian, nama_varian, id_barang, stok_varian, harga_varian, id_satuan, id_gudang, harga_jual } = req.body
+
+        sql = 'INSERT INTO VARIAN Values'
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+        
+        db.query('INSERT INTO varian VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [id_varian, nama_varian, id_barang, stok_varian, harga_varian, id_satuan, id_gudang, path, harga_jual], (err) => {
+            if (err) return res.send(err)
+        })
+
+        res.redirect('inventory', { mode, user: req.session.user })
+    })
+
     router.get('/supplier', (req, res) => {
         const mode = 'supplier'
         res.render('supplier', { mode, user: req.session.user })

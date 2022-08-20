@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session')
 var flash = require('connect-flash');
+var fileUpload = require("express-fileupload");
 
 async function main() {
   try {
@@ -43,6 +44,9 @@ async function main() {
 
     app.use('/', indexRouter);
     app.use('/data', dataRouter);
+
+    app.use( fileUpload({
+    }) );
 
     var debug = require('debug')('pos:server');
     var http = require('http');
