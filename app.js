@@ -7,6 +7,7 @@ var session = require('express-session')
 var flash = require('connect-flash');
 var fileUpload = require("express-fileupload");
 
+
 async function main() {
   try {
     // Use connect method to connect to the server
@@ -41,12 +42,14 @@ async function main() {
       saveUninitialized: true,
     }));
     app.use(flash());
+    app.use( fileUpload({
+      createParentPath: true,
+    }) );
 
     app.use('/', indexRouter);
     app.use('/data', dataRouter);
 
-    app.use( fileUpload({
-    }) );
+
 
     var debug = require('debug')('pos:server');
     var http = require('http');

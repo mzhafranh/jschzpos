@@ -3,6 +3,7 @@ var router = express.Router();
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const helpers = require('../helpers/util')
+var path = require('path');
 
 /* GET home page. */
 module.exports = function (db) {
@@ -201,24 +202,25 @@ module.exports = function (db) {
     router.post('/inventoryadd', (req, res) => {
         const mode = 'inventory'
 
+        console.log(req.files)
+
         if (!req.files) {
             return res.status(400).send("No files were uploaded.");
           }
 
-          
         console.log(req.files.gambar_varian)
         const file = req.files.gambar_varian;
         const path = __dirname + "/files/" + file.name;
-        const extensionName = path.extname(file.name);
-        const allowedExtension = ['.png', '.jpg', '.jpeg'];
+        // const extensionName = path.extname(file.name);
+        // const allowedExtension = ['.png', '.jpg', '.jpeg'];
 
         const wheres = []
         const values = []
         var count = 1;
 
-        if (!allowedExtension.includes(extensionName)) {
-            return res.status(422).send("Invalid Image");
-        }
+        // if (!allowedExtension.includes(extensionName)) {
+        //     return res.status(422).send("Invalid Image");
+        // }
 
         file.mv(path, (err) => {
             if (err) {
