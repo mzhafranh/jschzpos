@@ -16,19 +16,19 @@
     <!-- Nav Item - Dashboard -->
     <li class="nav-item <%= mode == 'dashboard' ? 'active' : ''%>">
         <a class="nav-link" href="/">
-            <i class="fa-solid fa-table-columns"></i>
+            <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a>
     </li>
     <% } %>
 
     <!-- Divider -->
-    <hr class="sidebar-divider">
+    <!-- <hr class="sidebar-divider"> -->
 
     <!-- Heading -->
-    <div class="sidebar-heading">
-        Operator
-    </div>
-
+    <!-- <div class="sidebar-heading"> -->
+        <!-- Operator -->
+    <!-- </div> -->
+<!-- 
     <li class="nav-item <%= mode == 'buy' ? 'active' : ''%>">
         <a class="nav-link" href="/buy">
             <i class="fa-solid fa-bag-shopping"></i>
@@ -39,7 +39,7 @@
         <a class="nav-link" href="/sell">
             <i class="fa-solid fa-cash-register"></i>
             <span>Sell</span></a>
-    </li>
+    </li> -->
 
     <% if (user.role == "admin") {%>
 
@@ -48,33 +48,95 @@
 
     <!-- Heading -->
     <div class="sidebar-heading">
-        Admin
+        Master
     </div>
-
-    <!-- Nav Item - Charts -->
-    <li class="nav-item <%= mode == 'inventory' ? 'active' : ''%>">
-        <a class="nav-link" href="/inventory">
-            <i class="fa-solid fa-boxes-stacked"></i>
-            <span>Inventory</span></a>
-    </li>
-
-    <!-- Nav Item - Charts -->
-    <li class="nav-item <%= mode == 'warehouse' ? 'active' : ''%>">
-        <a class="nav-link" href="/warehouse">
-            <i class="fa-solid fa-warehouse"></i>
-            <span>Warehouse</span></a>
-    </li>
-
-    <!-- Nav Item - Tables -->
-    <li class="nav-item <%= mode == 'supplier' ? 'active' : ''%>">
-        <a class="nav-link" href="/supplier">
-            <i class="fa-solid fa-truck-ramp-box"></i>
-            <span>Supplier</span></a>
-    </li>
-
 
     <!-- Nav Item - Pages Collapse Menu -->
     <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true"
+            aria-controls="collapsePages">
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Goods Utilities</span>
+        </a>
+        <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Login Screens:</h6>
+                <a class="collapse-item" href="/users">Users</a>
+                <a class="collapse-item" href="/unit">Unit</a>
+                <div class="collapse-divider"></div>
+            </div>
+        </div>
+    </li>
+
+    <!-- Nav Item - Charts -->
+    <li class="nav-item <%= mode == 'suppliers' ? 'active' : ''%>">
+        <a class="nav-link" href="/suppliers">
+            <i class="fa-solid fa-link"></i>
+            <span>Suppliers</span></a>
+    </li>
+
+    <!-- Nav Item - Charts -->
+    <li class="nav-item <%= mode == 'customers' ? 'active' : ''%>">
+        <a class="nav-link" href="/customers">
+            <i class="fa-solid fa-users"></i>
+            <span>Customers</span></a>
+    </li>
+
+    <!-- Nav Item - Charts -->
+    <li class="nav-item <%= mode == 'users' ? 'active' : ''%>">
+        <a class="nav-link" href="/users">
+            <i class="fa-solid fa-user"></i>
+            <span>Users</span></a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Transactions
+    </div>
+
+    <!-- Nav Item - Charts -->
+    <li class="nav-item <%= mode == 'purchases' ? 'active' : ''%>">
+        <a class="nav-link" href="/purchases">
+            <i class="fa-solid fa-table"></i>
+            <span>Purchases</span></a>
+    </li>
+
+
+    <!-- Nav Item - Charts -->
+    <li class="nav-item <%= mode == 'sales' ? 'active' : ''%>">
+        <a class="nav-link" href="/sales">
+            <i class="fa-solid fa-chart-area"></i>
+            <span>Sales</span></a>
+    </li>
+
+
+    <!-- Nav Item - Charts -->
+    <!-- <li class="nav-item <%= mode == 'inventory' ? 'active' : ''%>">
+        <a class="nav-link" href="/inventory">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <span>Inventory</span></a>
+    </li> -->
+
+    <!-- Nav Item - Charts -->
+    <!-- <li class="nav-item <%= mode == 'warehouse' ? 'active' : ''%>">
+        <a class="nav-link" href="/warehouse">
+            <i class="fa-solid fa-warehouse"></i>
+            <span>Warehouse</span></a>
+    </li> -->
+
+    <!-- Nav Item - Tables -->
+    <!-- <li class="nav-item <%= mode == 'supplier' ? 'active' : ''%>">
+        <a class="nav-link" href="/supplier">
+            <i class="fa-solid fa-truck-ramp-box"></i>
+            <span>Supplier</span></a>
+    </li> -->
+
+
+    <!-- Nav Item - Pages Collapse Menu -->
+    <!-- <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true"
             aria-controls="collapsePages">
             <i class="fa-solid fa-ellipsis"></i>
@@ -88,7 +150,7 @@
                 <div class="collapse-divider"></div>
             </div>
         </div>
-    </li>
+    </li> -->
 
     <% } %>
 

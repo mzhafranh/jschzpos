@@ -12,11 +12,12 @@
                             <!-- Begin Page Content -->
                             <div class="container-fluid">
                                 <!-- Page Heading -->
-                                <input type="hidden" name = "user" id="user" value="<%= user.username %>">
+                                <input type="hidden" name="user" id="user" value="<%= user.name %>">
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                                    <h1 class="h3 mb-0 text-gray-800">Users</h1>
+                                    <h3 class="h3 mb-0 text-gray-800">Users</h3>
                                 </div>
-                                <form id="form-search">
+                                <h5 class="h5 mb-0 text-gray-600" >This is data of users</h5>
+                                <!-- <form id="form-search">
                                     <div class="card">
                                         <div class="card-header">
                                             <h2>Search</h2>
@@ -33,11 +34,11 @@
                                             </div>
 
                                             <div class="row mb-3">
-                                                <label for="searchUsername" class="col-sm-2 col-form-label">Username
+                                                <label for="searchName" class="col-sm-2 col-form-label">Name
                                                 </label>
                                                 <div class="col-sm-10">
-                                                    <input type="text" class="form-control" id="searchUsername"
-                                                        name="searchUsername">
+                                                    <input type="text" class="form-control" id="searchName"
+                                                        name="searchName">
                                                 </div>
                                             </div>
 
@@ -75,149 +76,151 @@
                                 <a href="/register" class="btn btn-primary">Register</a>
                             </div>
 
+                            <p></p> -->
 
-
-
-                            <p></p>
-
+                            </div>
                     </div>
+
                     <%- include('partials/footer')%>
-                        <script>
-                            const readData = (params) => {
-                                fetch(`http://localhost:3000/data/users?${new URLSearchParams(params).toString()}`).then((response) => {
-                                    if (!response.ok) {
-                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                </div>
+
+                <script>
+                    const readData = (params) => {
+                        fetch(`http://localhost:3000/data/users?${new URLSearchParams(params).toString()}`).then((response) => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                            .then((response) => {
+                                let newParams = { ...params };
+                                let htmlThead = '';
+                                htmlThead += `<tr>`
+                                if (params.sortBy == "email" && params.order == "asc") {
+                                    newParams.order = "desc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                } else if (params.sortBy == "email" && params.order == "desc") {
+                                    newParams.order = "asc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                } else {
+                                    newParams.sortBy = "email";
+                                    newParams.order = "asc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                }
+
+                                if (params.sortBy == "name" && params.order == "asc") {
+                                    newParams.order = "desc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Name<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                } else if (params.sortBy == "name" && params.order == "desc") {
+                                    newParams.order = "asc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Name<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                } else {
+                                    newParams.sortBy = "name";
+                                    newParams.order = "asc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Name<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                }
+
+                                if (params.sortBy == "role" && params.order == "asc") {
+                                    newParams.order = "desc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
+                                } else if (params.sortBy == "role" && params.order == "desc") {
+                                    newParams.order = "asc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
+                                } else {
+                                    newParams.sortBy = "role";
+                                    newParams.order = "asc";
+                                    htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
+                                }
+
+                                htmlThead += `<th><button class = "btn">Action</button></th>`
+                                htmlThead += `</tr>`
+
+                                document.querySelector('table thead').innerHTML = htmlThead;
+
+                                let htmlTbody = '';
+                                response.data.forEach((item, index) => {
+                                    if (document.getElementById('user').value == item.name) {
+                                        htmlTbody += `
+                            <tr>
+                                <td>${item.email}</td>
+                                <td>${item.name}</td>
+                                <td>${item.role}</td>
+                                <td></td>
+                            </tr>
+                            `
+                                    } else {
+                                        htmlTbody += `
+                            <tr>
+                                <td>${item.email}</td>
+                                <td>${item.name}</td>
+                                <td>${item.role}</td>
+                                <td><button type="button" class="btn btn-danger" onClick="deleteData('${item.email}')"><i class="fa-solid fa-trash-can"></i></button></td>
+                            </tr>
+                            `
                                     }
-                                    return response.json();
                                 })
-                                    .then((response) => {
-                                        let newParams = { ...params };
-                                        let htmlThead = '';
-                                        htmlThead += `<tr>`
-                                        if (params.sortBy == "email" && params.order == "asc") {
-                                            newParams.order = "desc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
-                                        } else if (params.sortBy == "email" && params.order == "desc") {
-                                            newParams.order = "asc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
-                                        } else {
-                                            newParams.sortBy = "email";
-                                            newParams.order = "asc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Email<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
-                                        }
+                                document.querySelector('table tbody').innerHTML = htmlTbody
 
-                                        if (params.sortBy == "username" && params.order == "asc") {
-                                            newParams.order = "desc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Username<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
-                                        } else if (params.sortBy == "username" && params.order == "desc") {
-                                            newParams.order = "asc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Username<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
-                                        } else {
-                                            newParams.sortBy = "username";
-                                            newParams.order = "asc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Username<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
-                                        }
-
-                                        if (params.sortBy == "role" && params.order == "asc") {
-                                            newParams.order = "desc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort-down" style="margin-left:10px;"></i></button></th>`
-                                        } else if (params.sortBy == "role" && params.order == "desc") {
-                                            newParams.order = "asc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort-up" style="margin-left:10px;"></i></button></th>`
-                                        } else {
-                                            newParams.sortBy = "role";
-                                            newParams.order = "asc";
-                                            htmlThead += `<th><button class="btn" onclick='readData(${JSON.stringify(newParams)})'>Role<i class="fa-solid fa-sort" style="margin-left:10px;"></i></button></th>`
-                                        }
-
-                                        htmlThead += `<th><button class = "btn">Action</button></th>`
-                                        htmlThead += `</tr>`
-
-                                        document.querySelector('table thead').innerHTML = htmlThead;
-
-                                        let htmlTbody = '';
-                                        response.data.forEach((item, index) => {
-                                            if (document.getElementById('user').value == item.username) {
-                                                htmlTbody += `
-                                        <tr>
-                                            <td>${item.email}</td>
-                                            <td>${item.username}</td>
-                                            <td>${item.role}</td>
-                                            <td></td>
-                                        </tr>
-                                        `
-                                            } else {
-                                                htmlTbody += `
-                                        <tr>
-                                            <td>${item.email}</td>
-                                            <td>${item.username}</td>
-                                            <td>${item.role}</td>
-                                            <td><button type="button" class="btn btn-danger" onClick="deleteData('${item.email}')"><i class="fa-solid fa-trash-can"></i></button></td>
-                                        </tr>
-                                        `
-                                            }
-                                        })
-                                        document.querySelector('table tbody').innerHTML = htmlTbody
-
-                                        let paging = '';
-                                        params.page = 1;
-                                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&laquo;</span></button>`
-                                        for (let i = 1; i <= response.totalPages; i++) {
-                                            if (response.page == i) {
-                                                params.page = i;
-                                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
-                                            }
-                                            else {
-                                                params.page = i;
-                                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
-                                            }
-                                        }
-                                        params.page = response.totalPages;
-                                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&raquo;</span></button>`
-                                        document.querySelector('.pagination').innerHTML = paging
-                                    })
-                                    .catch((err) => {
-                                        console.error(err);
-                                    });
-                            }
-
-                            const resetForm = () => {
-                                // document.getElementById('idObj').value = ''
-                                document.getElementById("form-search").reset();
-                            }
-
-                            readData({ sortBy: "email", order: "asc" })
-
-                            const deleteData = (email) => {
-                                fetch(`http://localhost:3000/data/users/delete/`, {
-                                    method: 'PUT',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({ email })
-                                }).then((response) => {
-                                    if (!response.ok) {
-                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                let paging = '';
+                                params.page = 1;
+                                paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&laquo;</span></button>`
+                                for (let i = 1; i <= response.totalPages; i++) {
+                                    if (response.page == i) {
+                                        params.page = i;
+                                        paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
                                     }
-                                    return response.json();
-                                }).then((response) => {
-                                    readData({ sortBy: "email", order: "asc" })
-                                });
-                            }
-
-                            document.getElementById('form-search').addEventListener('submit', function (event) {
-                                event.preventDefault();
-                                const email = document.getElementById('searchEmail').value
-                                const username = document.getElementById('searchUsername').value
-                                const role = document.getElementById('searchRole').value
-                                const sortBy = "email";
-                                const order = "asc";
-                                let params = { email, username, role, sortBy, order }
-                                readData(params)
+                                    else {
+                                        params.page = i;
+                                        paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
+                                    }
+                                }
+                                params.page = response.totalPages;
+                                paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&raquo;</span></button>`
+                                document.querySelector('.pagination').innerHTML = paging
                             })
+                            .catch((err) => {
+                                console.error(err);
+                            });
+                    }
 
-                        </script>
+                    const resetForm = () => {
+                        // document.getElementById('idObj').value = ''
+                        document.getElementById("form-search").reset();
+                    }
+
+                    readData({ sortBy: "email", order: "asc" })
+
+                    const deleteData = (email) => {
+                        fetch(`http://localhost:3000/data/users/delete/`, {
+                            method: 'PUT',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ email })
+                        }).then((response) => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        }).then((response) => {
+                            readData({ sortBy: "email", order: "asc" })
+                        });
+                    }
+
+                    document.getElementById('form-search').addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        const email = document.getElementById('searchEmail').value
+                        const name = document.getElementById('searchName').value
+                        const role = document.getElementById('searchRole').value
+                        const sortBy = "email";
+                        const order = "asc";
+                        let params = { email, name, role, sortBy, order }
+                        readData(params)
+                    })
+
+                </script>
+
     </body>
 
     </html>

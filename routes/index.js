@@ -38,8 +38,10 @@ module.exports = function (db) {
     })
 
     router.get('/', helpers.isLoggedIn, function (req, res, next) {
+
         const mode = 'dashboard'
         res.render('index', { mode, user: req.session.user })
+        
         // const url = req.url == '/' ? '/?page=1' : req.url;
         // const page = req.query.page || 1;
         // const limit = 5;
@@ -277,7 +279,9 @@ module.exports = function (db) {
 
     router.post('/login', (req, res) => {
         const { email, password } = req.body
+        
         db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
+            // console.log(data)
             if (err) return res.send(err)
             if (data.rows.length == 0) {
                 req.flash('info', 'Email Not Registered')
