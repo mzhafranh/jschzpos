@@ -500,7 +500,7 @@ module.exports = function (db) {
         const values = []
         const filter = req.url
         var count = 1;
-        var sortBy = req.query.sortBy == '' ? `email` : req.query.sortBy;
+        var sortBy = req.query.sortBy == '' ? `userid` : req.query.sortBy;
         var order = req.query.order == '' ? `asc` : req.query.order;
 
         console.log(req.query)
@@ -511,9 +511,9 @@ module.exports = function (db) {
             values.push(req.query.email);
         }
 
-        if (req.query.username) {
-            wheres.push(`username ilike '%' || $${count++} || '%'`);
-            values.push(req.query.username);
+        if (req.query.name) {
+            wheres.push(`name ilike '%' || $${count++} || '%'`);
+            values.push(req.query.name);
         }
 
         if (req.query.role) {
