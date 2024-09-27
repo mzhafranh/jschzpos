@@ -493,33 +493,34 @@ module.exports = function (db) {
     })
 
     router.get('/users', (req, res,) => {
-        const page = req.query.page || 1;
-        const limit = req.query.limit || 5;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
         const wheres = []
         const values = []
+        const query = req.query.query
         const filter = req.url
         var count = 1;
         var sortBy = req.query.sortBy == '' ? `userid` : req.query.sortBy;
         var order = req.query.order == '' ? `asc` : req.query.order;
 
         console.log(req.query)
-        console.log(req.query.sortBy == '')
 
-        if (req.query.email) {
-            wheres.push(`email ilike '%' || $${count++} || '%'`);
-            values.push(req.query.email);
+        if(req.query.query){
+            wheres.push(`email ilike '%' || $${count++} || '%' OR name ilike '%' || $${count++} || '%'`);
+            values.push(req.query.query)
+            values.push(req.query.query)
         }
 
-        if (req.query.name) {
-            wheres.push(`name ilike '%' || $${count++} || '%'`);
-            values.push(req.query.name);
-        }
+        // if (req.query.email) {
+        //     wheres.push(`email ilike '%' || $${count++} || '%'`);
+        //     values.push(req.query.email);
+        // }
 
-        if (req.query.role) {
-            wheres.push(`role ilike '%' || $${count++} || '%'`);
-            values.push(req.query.role);
-        }
+        // if (req.query.name) {
+        //     wheres.push(`name ilike '%' || $${count++} || '%'`);
+        //     values.push(req.query.name);
+        // }
 
         let sql = 'SELECT COUNT(*) AS total FROM users';
         if (wheres.length > 0) {

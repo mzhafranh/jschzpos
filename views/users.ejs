@@ -1,5 +1,27 @@
 <%- include('partials/header')%>
 
+    <head>
+        <style>
+            /* Dark overlay for background when modal is open */
+            #overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                /* Semi-transparent black */
+                z-index: 1050;
+                display: none;
+            }
+
+            /* Modal should be above the dark overlay */
+            #formModal {
+                z-index: 1060;
+            }
+        </style>
+    </head>
+
     <body id="page-top">
         <!-- Page Wrapper -->
         <div id="wrapper">
@@ -18,7 +40,11 @@
 
                                 <div class="card shadow mb-4">
                                     <div class="card-header">
-                                        <button class="btn btn-primary">Add</button>
+                                        <a href="/users/add" class="btn btn-primary btn-icon-split">
+                                            <span class="icon text-white-50">
+                                                <i class="fa-solid fa-plus"></i></span>
+                                            <span class="text">Add</span>
+                                        </a>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
@@ -36,7 +62,7 @@
                                                     </div>
                                                     <div class="col-sm-12 col-md-6">
                                                         <div id="dataTable_filter" class="dataTables_filter">
-                                                            <label>Search:<input type="search"
+                                                            <label>Search:<input type="search" id="search-input"
                                                                     class="form-control form-control-sm" placeholder=""
                                                                     aria-controls="dataTable"></label>
                                                         </div>
@@ -143,12 +169,49 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <p></p>
-
                     </div>
-                    <%- include('partials/footer')%>
 
+                    <!-- Dark overlay -->
+                    <div id="overlay"></div>
+
+                    <!-- Modal Structure -->
+                    <div id="formUserModal" class="modal" tabindex="-1" style="display: none;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Delete Confirmation</h5>
+                                    <button type="button" class="btn" id="closeUserModal"><i
+                                            class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="userForm">
+                                        <div class="row mb-3">
+                                            <label for="name" class="col-form-label col-md-2">Name</label>
+                                            <div class="col-md-10">
+                                                <input type="text" class="form-control" id="name" name="name" required>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="phone" class="col-form-label col-md-2">Phone</label>
+                                            <div class="col-md-10">
+                                                <input type="text" class="form-control" id="phone" name="phone"
+                                                    required>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div id="deleteConfirmation" style="display:none;">
+                                        <p class="mb-0">Are you sure, you want to delete it?</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" id="closeOptionUserModal">Close</button>
+                                    <button class="btn btn-primary" id="submitUser">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('partials/footer')%>
                 </div>
         </div>
 
@@ -158,7 +221,8 @@
                 totalPages: 1,
                 limit: 3,
                 sortBy: "userid",
-                order: "asc"
+                order: "asc",
+                query: ''
             }
 
             const readData = (params) => {
@@ -169,14 +233,12 @@
                     return response.json();
                 })
                     .then((response) => {
-                        newParams = { ...params };
-
+                        let newParams = { ...params };
 
                         let useridThead = document.getElementById('useridThead')
                         let emailThead = document.getElementById('emailThead')
                         let nameThead = document.getElementById('nameThead')
                         let roleThead = document.getElementById('roleThead')
-
 
                         if (params.sortBy == "userid" && params.order == "asc") {
                             useridThead.className = 'sorting sorting_asc'
@@ -229,7 +291,9 @@
                                 <td>${item.email}</td>
                                 <td>${item.name}</td>
                                 <td>${item.role}</td>
-                                <td><button type="button" class="btn btn-danger" onClick="deleteData('${item.email}')"><i class="fa-solid fa-trash-can"></i></button></td>
+                                <td><button type="button" class="btn btn-success btn-circle"><i class="fas fa-info-circle"></i></button>
+                                    <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.email}')"><i class="fa-solid fa-trash-can"></i></button>
+                                    </td>
                             </tr>
                             `
                             }
@@ -248,22 +312,34 @@
                         }
                         document.getElementById('dataTable_info').innerText = showEntryText
 
-
                         let paging = '';
-                        params.page = 1;
-                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&laquo;</span></button>`
+
+                        if (!(params.page == 1)) {
+                            newParams.page = params.page - 1;
+                            paging += `<li class="paginate_button page-item previous enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Previous</span></button></li>`
+                        } else {
+                            paging += `<li class="paginate_button page-item previous disabled"><span class="text-gray-600 page-link" aria-hidden="true">Previous</span></li>`
+                        }
+
+                        newParams.page = 1;
                         for (let i = 1; i <= response.totalPages; i++) {
                             if (response.page == i) {
-                                params.page = i;
-                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
+                                newParams.page = i;
+                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
                             }
                             else {
-                                params.page = i;
-                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'>${i}</button></li>`
+                                newParams.page = i;
+                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
                             }
                         }
-                        params.page = response.totalPages;
-                        paging += `<button type="button" class="page-link" onClick='readData(${JSON.stringify(params)})'><span aria-hidden="true">&raquo;</span></button>`
+
+                        if (!(params.page == response.totalPages)) {
+                            newParams.page = params.page + 1
+                            paging += `<li class="paginate_button page-item next enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Next</span></button></li>`
+                        } else {
+                            paging += `<li class="paginate_button page-item next disabled"><span class="text-gray-600 page-link" aria-hidden="true">Next</span></li>`
+
+                        }
                         document.querySelector('.pagination').innerHTML = paging
                     })
                     .catch((err) => {
@@ -278,30 +354,21 @@
                 // document.getElementById("form-search").reset();
             }
 
-            const deleteData = (email) => {
-                fetch(`http://localhost:3000/data/users/delete/`, {
-                    method: 'PUT',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email })
-                }).then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                }).then((response) => {
-                    readData({ sortBy: "userid", order: "asc" })
-                });
-            }
-
-            
             document.getElementById('dataTable_length').addEventListener('change', function () {
-                const selectElement = document.getElementById('dataTable_length');
-                readParams.limit = selectElement.value
+                const selectElement = document.getElementById('dataTable_length')
+                readParams.limit = parseInt(selectElement.value)
+                console.log(readParams)
                 readData(readParams)
             });
+
+            document.getElementById('search-input').addEventListener('change', function() {
+                const searchInput = document.getElementById('search-input')
+                const selectElement = document.getElementById('dataTable_length')
+                readParams.limit = parseInt(selectElement.value)
+                readParams.query = searchInput.value
+                console.log(readParams.query)
+                readData(readParams)
+            })
 
             const useridThead = document.getElementById("useridThead")
             const emailThead = document.getElementById("emailThead")
@@ -352,6 +419,58 @@
                     readParams.order = 'asc'
                 }
                 readData(readParams)
+            }
+
+            const closeUserModal = document.getElementById('closeUserModal');
+            const closeOptionUserModal = document.getElementById('closeOptionUserModal');
+            const formUserModal = document.getElementById('formUserModal');
+            const userForm = document.getElementById('userForm');
+            const submitUser = document.getElementById('submitUser');
+            const deleteConfirmation = document.getElementById('deleteConfirmation');
+            const overlay = document.getElementById('overlay');
+
+            function openDeleteModal(email) {
+                formUserModal.style.display = 'block'
+                userForm.style.display = 'none'
+                deleteConfirmation.style.display = 'block'
+                overlay.style.display = 'block'
+                closeOptionUserModal.innerText = "No"
+                submitUser.innerText = "Yes"
+                submitUser.onclick = function () { deleteUser(email); }
+            }
+
+            function closeModal() {
+                formUserModal.style.display = 'none';
+                overlay.style.display = 'none';
+            }
+
+            closeUserModal.onclick = function () {
+                closeModal()
+            }
+
+            closeOptionUserModal.onclick = function () {
+                closeModal()
+            }
+
+            const deleteUser = (email) => {
+                fetch(`http://localhost:3000/data/users/delete/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                }).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                }).then((response) => {
+                    closeModal()
+                    readParams.sortBy = 'userid'
+                    readParams.order = 'asc'
+                    readData(readParams)
+                });
             }
 
         </script>
