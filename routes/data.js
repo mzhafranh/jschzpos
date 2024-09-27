@@ -494,7 +494,7 @@ module.exports = function (db) {
 
     router.get('/users', (req, res,) => {
         const page = req.query.page || 1;
-        const limit = 5;
+        const limit = req.query.limit || 5;
         const offset = (page - 1) * limit;
         const wheres = []
         const values = []
@@ -548,7 +548,7 @@ module.exports = function (db) {
                         data: data.rows,
                         totalData,
                         totalPages,
-                        display: limit,
+                        limit: limit,
                         page: parseInt(page)
                       })
                 })

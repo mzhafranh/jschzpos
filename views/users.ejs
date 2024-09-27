@@ -187,7 +187,7 @@
                         }
 
                         if (params.sortBy == "email" && params.order == "asc") {
-                            emailThead.className ='sorting sorting_asc'
+                            emailThead.className = 'sorting sorting_asc'
                         } else if (params.sortBy == "email" && params.order == "desc") {
                             emailThead.className = 'sorting sorting_desc'
                         } else {
@@ -195,21 +195,20 @@
                         }
 
                         if (params.sortBy == "name" && params.order == "asc") {
-                            nameThead.className ='sorting sorting_asc'
+                            nameThead.className = 'sorting sorting_asc'
                         } else if (params.sortBy == "name" && params.order == "desc") {
-                            nameThead.className ='sorting sorting_desc'
+                            nameThead.className = 'sorting sorting_desc'
                         } else {
-                            nameThead.className ='sorting'
+                            nameThead.className = 'sorting'
                         }
 
                         if (params.sortBy == "role" && params.order == "asc") {
-                            roleThead.className ='sorting sorting_asc'
+                            roleThead.className = 'sorting sorting_asc'
                         } else if (params.sortBy == "role" && params.order == "desc") {
-                            roleThead.className ='sorting sorting_desc'
+                            roleThead.className = 'sorting sorting_desc'
                         } else {
-                            roleThead.className ='sorting'
+                            roleThead.className = 'sorting'
                         }
-                    
 
                         let htmlTbody = '';
                         response.data.forEach((item, index) => {
@@ -236,6 +235,19 @@
                             }
                         })
                         document.querySelector('table tbody').innerHTML = htmlTbody
+
+                        let startingIndex = (response.page - 1) * response.limit
+
+                        let showEntryText = ''
+                        if (response.totalData == 0) {
+                            showEntryText += `Showing 0 to 0 of 0 entries`
+                        } else if (response.page * response.limit > response.totalData || response.limit == 0) {
+                            showEntryText += `Showing ${startingIndex + 1} to ${response.totalData} of ${response.totalData}`
+                        } else {
+                            showEntryText += `Showing ${startingIndex + 1} to ${response.page * response.limit} of ${response.totalData}`
+                        }
+                        document.getElementById('dataTable_info').innerText = showEntryText
+
 
                         let paging = '';
                         params.page = 1;
