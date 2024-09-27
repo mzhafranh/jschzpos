@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 /* GET home page. */
 module.exports = function (db) {
@@ -558,6 +560,27 @@ module.exports = function (db) {
               res.status(500).json({ message: "error ambil data" })
             }
 
+    })
+
+    router.post('/users/add', (req, res) => {
+        try {
+        const {email, name, password, role} = req.body
+
+        console.log(req.body)
+
+        bcrypt.hash(password, saltRounds, function (err, hash) {
+            if (err) return res.send(err)
+                db.query('INSERT INTO users (email, name, password, role) VALUES ($1, $2, $3, $4)', [email, name, hash, role], (err) => {
+                    if (err) {
+                        console.error(err)
+                    }
+                })
+                res.status(200).json({message: "ok"})
+          });
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
     })
 
     router.put('/users/delete/', (req, res) => {

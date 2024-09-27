@@ -1,0 +1,102 @@
+<%- include('partials/header')%>
+
+    <body id="page-top">
+        <!-- Page Wrapper -->
+        <div id="wrapper">
+            <%- include('partials/sidebar menu')%>
+                <!-- Content Wrapper -->
+                <div id="content-wrapper" class="d-flex flex-column">
+                    <!-- Main Content -->
+                    <div id="content">
+                        <%- include('partials/topbar menu')%>
+                            <!-- Begin Page Content -->
+                            <div class="container-fluid">
+                                <!-- Page Heading -->
+                                <h3 class="h3 mb-2 text-gray-800">Users</h3>
+
+                                <div class="card shadow mb-4">
+                                    <div class="card-header">
+                                        <h5 class="m-0 font-weight-bold text-primary">Form add</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="addUserForm">
+                                            <div class="row mb-3">
+                                                <label for="email" class="col-form-label col-md-2">Email</label>
+                                                <div class="col-md-10 pl-0">
+                                                    <input type="email" class="form-control" id="email" name="email"
+                                                        required placeholder="insert email">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <label for="name" class="col-form-label col-md-2">Name</label>
+                                                <div class="col-md-10 pl-0">
+                                                    <input type="text" class="form-control" id="name" name="name"
+                                                        required placeholder="insert name">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <label for="password" class="col-form-label col-md-2">Password</label>
+                                                <div class="col-md-10 pl-0">
+                                                    <input type="password" class="form-control" id="password"
+                                                        name="password" required placeholder="insert password">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <label for="role" class="col-form-label col-md-2">Role</label>
+                                                <div class="col-10">
+                                                    <div class="row">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="radio" name="role"
+                                                                id="roleOperator" value="op" checked>
+                                                            <label class="form-check-label"
+                                                                for="roleOperator">Operator</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="radio" name="role"
+                                                                id="roleAdmin" value="admin">
+                                                            <label class="form-check-label"
+                                                                for="roleAdmin">Admin</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-success btn-icon-split">
+                                            <span class="icon text-white-50">
+                                                <i class="fa-solid fa-database"></i>
+                                            </span>
+                                            <span class="text">Save</span>
+                                        </button>
+                                        </form>
+                                        <a href="/users" class="btn btn-warning btn-icon-split">
+                                            <span class="icon text-white-50">
+                                                <i class="fa-solid fa-rotate-left"></i>
+                                            </span>
+                                            <span class="text">Back</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </div>
+                    </div>
+                    <%- include('partials/footer')%>
+                </div>
+        </div>
+
+        <script>
+            const addUserForm = document.getElementById('addUserForm');
+            document.getElementById('addUserForm').addEventListener('submit', function (event) {
+                event.preventDefault()
+                const formData = new FormData(addUserForm);
+                fetch('http://localhost:3000/data/users/add', {
+                    method: 'POST',
+                    body: formData,
+                }).then((response) => {
+                    window.location.href = 'http://localhost:3000/users'
+                })
+            });
+        </script>
+    </body>

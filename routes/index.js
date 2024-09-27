@@ -248,6 +248,11 @@ module.exports = function (db) {
         res.render('users', { mode, user: req.session.user })
     })
 
+    router.get('/users/add', helpers.isLoggedIn, (req, res) => {
+        const mode = 'users'
+        res.render('usersadd', { mode, user: req.session.user })
+    })
+
     router.get('/unit', (req, res) => {
         const mode = 'unit'
         res.render('unit', { mode, user: req.session.user })
@@ -303,7 +308,6 @@ module.exports = function (db) {
                 }
             });
         })
-
     })
 
     return router;
