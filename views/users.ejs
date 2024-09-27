@@ -25,13 +25,13 @@
                                             <div id="dataTable_wrapper" class="dataTables_wrapper dt-bootstrap4">
                                                 <div class="row">
                                                     <div class="col-sm-12 col-md-6">
-                                                        <div class="dataTables_length" id="dataTable_length"><label>Show
-                                                                <select name="dataTable_length"
+                                                        <div class="dataTables_length"><label>Show
+                                                                <select name="dataTable_length" id="dataTable_length"
                                                                     aria-controls="dataTable"
                                                                     class="custom-select custom-select-sm form-control form-control-sm">
-                                                                    <option value="3">3</option>
-                                                                    <option value="10">10</option>
-                                                                    <option value="100">100</option>
+                                                                    <option value=3>3</option>
+                                                                    <option value=10>10</option>
+                                                                    <option value=100>100</option>
                                                                 </select> entries</label></div>
                                                     </div>
                                                     <div class="col-sm-12 col-md-6">
@@ -292,9 +292,16 @@
                     }
                     return response.json();
                 }).then((response) => {
-                    readData({ sortBy: "email", order: "asc" })
+                    readData({ sortBy: "userid", order: "asc" })
                 });
             }
+
+            
+            document.getElementById('dataTable_length').addEventListener('change', function () {
+                const selectElement = document.getElementById('dataTable_length');
+                readParams.limit = selectElement.value
+                readData(readParams)
+            });
 
             const useridThead = document.getElementById("useridThead")
             const emailThead = document.getElementById("emailThead")
@@ -346,17 +353,6 @@
                 }
                 readData(readParams)
             }
-
-            // document.getElementById('form-search').addEventListener('submit', function (event) {
-            //     event.preventDefault();
-            //     const email = document.getElementById('searchEmail').value
-            //     const name = document.getElementById('searchName').value
-            //     const role = document.getElementById('searchRole').value
-            //     const sortBy = "email";
-            //     const order = "asc";
-            //     let params = { email, name, role, sortBy, order }
-            //     readData(params)
-            // })
 
         </script>
 
