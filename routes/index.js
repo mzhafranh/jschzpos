@@ -253,6 +253,12 @@ module.exports = function (db) {
         res.render('usersadd', { mode, user: req.session.user })
     })
 
+    router.get('/users/edit/:id', helpers.isLoggedIn, (req, res) => {
+        let userid = req.params.id
+        const mode = 'users'
+        res.render('usersedit', { mode, userid, user: req.session.user })
+    })
+
     router.get('/unit', (req, res) => {
         const mode = 'unit'
         res.render('unit', { mode, user: req.session.user })

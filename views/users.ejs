@@ -291,7 +291,7 @@
                                 <td>${item.email}</td>
                                 <td>${item.name}</td>
                                 <td>${item.role}</td>
-                                <td><button type="button" class="btn btn-success btn-circle"><i class="fas fa-info-circle"></i></button>
+                                <td><a href="/users/edit/${item.userid}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
                                     <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.email}')"><i class="fa-solid fa-trash-can"></i></button>
                                     </td>
                             </tr>
