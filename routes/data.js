@@ -216,7 +216,7 @@ module.exports = function (db) {
             })
         } catch (err) {
             console.log(err)
-            res.status(500).json({ message: "error save data" })
+            res.status(500).json({ message: "error ambil data" })
         }
     })
 
@@ -307,6 +307,54 @@ module.exports = function (db) {
         }
     })
 
+    router.post('/units/add', (req, res) => {
+        try {
+            const { unit, name, note} = req.body
+            console.log(req.body)
+            db.query('INSERT INTO units VALUES ($1, $2, $3)', [unit, name, note], (err) => {
+                if (err) {
+                    console.error(err)
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.get('/units/edit/:id', (req, res) => {
+        try {
+            let unitId = req.params.id
+            db.query('SELECT * FROM units WHERE unit = $1', [unitId], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({
+                    data: data.rows
+                })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.put('/units/edit/:id', (req, res) => {
+        try {
+            let unitId = req.params.id
+            const { unit, name, note } = req.body
+            db.query('UPDATE units SET unit = $1, name = $2, note = $3 WHERE unit = $4', [unit, name, note, unitId], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({ message: "ok" })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
 
 
 

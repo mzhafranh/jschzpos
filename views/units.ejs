@@ -121,7 +121,7 @@
                                                         <div class="dataTables_paginate paging_simple_numbers"
                                                             id="dataTable_paginate">
                                                             <ul class="pagination">
-                                                                
+
                                                             </ul>
                                                         </div>
                                                     </div>
@@ -192,11 +192,11 @@
                         let noteThead = document.getElementById('noteThead')
 
                         if (params.sortBy == "unit" && params.order == "asc") {
-                            useridThead.className = 'sorting sorting_asc'
+                            unitThead.className = 'sorting sorting_asc'
                         } else if (params.sortBy == "unit" && params.order == "desc") {
-                            useridThead.className = 'sorting sorting_desc'
+                            unitThead.className = 'sorting sorting_desc'
                         } else {
-                            useridThead.className = 'sorting'
+                            unitThead.className = 'sorting'
                         }
 
                         if (params.sortBy == "name" && params.order == "asc") {
@@ -217,17 +217,7 @@
 
                         let htmlTbody = '';
                         response.data.forEach((item, index) => {
-                            if (document.getElementById('user').value == item.name) {
-                                htmlTbody += `
-                            <tr>
-                                <td>${item.unit}</td>
-                                <td>${item.name}</td>
-                                <td>${item.note}</td>
-                                <td></td>
-                            </tr>
-                            `
-                            } else {
-                                htmlTbody += `
+                            htmlTbody += `
                             <tr>
                                 <td>${item.unit}</td>
                                 <td>${item.name}</td>
@@ -237,7 +227,6 @@
                                     </td>
                             </tr>
                             `
-                            }
                         })
                         document.querySelector('table tbody').innerHTML = htmlTbody
 
@@ -302,7 +291,7 @@
                 readData(readParams)
             });
 
-            document.getElementById('search-input').addEventListener('change', function() {
+            document.getElementById('search-input').addEventListener('change', function () {
                 const searchInput = document.getElementById('search-input')
                 const selectElement = document.getElementById('dataTable_length')
                 readParams.limit = parseInt(selectElement.value)

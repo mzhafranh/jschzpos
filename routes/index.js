@@ -191,9 +191,9 @@ module.exports = function (db) {
     })
 
     router.get('/users/edit/:id', helpers.isLoggedIn, (req, res) => {
-        let userid = req.params.id
+        let userId = req.params.id
         const mode = 'users'
-        res.render('usersedit', { mode, userid, user: req.session.user })
+        res.render('usersedit', { mode, userId, user: req.session.user })
     })
 
     router.get('/units', helpers.isLoggedIn, (req, res) => {
@@ -204,6 +204,12 @@ module.exports = function (db) {
     router.get('/units/add', helpers.isLoggedIn, (req, res) => {
         const mode = 'goods'
         res.render('unitsadd', { mode, user: req.session.user })
+    })
+
+    router.get('/units/edit/:id', helpers.isLoggedIn, (req, res) => {
+        let unitId = req.params.id
+        const mode = 'goods'
+        res.render('unitsedit', { mode, unitId, user: req.session.user })
     })
 
 
