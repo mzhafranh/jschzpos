@@ -237,7 +237,7 @@ module.exports = function (db) {
         }
     })
 
-    router.put('/users/delete/', (req, res) => {
+    router.delete('/users/delete/', (req, res) => {
         try {
             db.query("DELETE FROM users WHERE email = $1", [req.body.email], (err) => {
                 if (err) {
@@ -353,6 +353,20 @@ module.exports = function (db) {
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.delete('/units/delete/', (req, res) => {
+        try {
+            db.query("DELETE FROM units WHERE unit = $1", [req.body.unit], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
         }
     })
 
