@@ -35,12 +35,12 @@
                             <div class="container-fluid">
                                 <!-- Page Heading -->
                                 <input type="hidden" name="user" id="user" value="<%= user.name %>">
-                                <h3 class="h3 mb-0 text-gray-800">Users</h3>
-                                <h5 class="h5 mt-2 text-gray-600">This is data of users</h5>
+                                <h3 class="h3 mb-0 text-gray-800">Unit</h3>
+                                <h5 class="h5 mt-2 text-gray-600">This is data of Units</h5>
 
                                 <div class="card shadow mb-4">
                                     <div class="card-header">
-                                        <a href="/users/add" class="btn btn-primary btn-icon-split">
+                                        <a href="/units/add" class="btn btn-primary btn-icon-split">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-plus"></i></span>
                                             <span class="text">Add</span>
@@ -75,18 +75,11 @@
                                                             aria-describedby="dataTable_info" style="width: 100%;">
                                                             <thead>
                                                                 <tr role="row">
-                                                                    <th id="useridThead" class="sorting sorting_asc"
+                                                                    <th id="unitThead" class="sorting sorting_asc"
                                                                         tabindex="0" aria-controls="dataTable"
                                                                         rowspan="1" colspan="1"
                                                                         aria-label="User ID: activate to sort column descending"
-                                                                        style="width: 162px;" aria-sort="ascending">User
-                                                                        ID
-                                                                    </th>
-                                                                    <th id="emailThead" class="sorting" tabindex="0"
-                                                                        aria-controls="dataTable" rowspan="1"
-                                                                        colspan="1"
-                                                                        aria-label="Email: activate to sort column ascending"
-                                                                        style="width: 162px;">Email
+                                                                        style="width: 162px;" aria-sort="ascending">Unit
                                                                     </th>
                                                                     <th id="nameThead" class="sorting" tabindex="0"
                                                                         aria-controls="dataTable" rowspan="1"
@@ -94,11 +87,11 @@
                                                                         aria-label="Name: activate to sort column ascending"
                                                                         style="width: 162px;">Name
                                                                     </th>
-                                                                    <th id="roleThead" class="sorting" tabindex="0"
+                                                                    <th id="noteThead" class="sorting" tabindex="0"
                                                                         aria-controls="dataTable" rowspan="1"
                                                                         colspan="1"
                                                                         aria-label="Role: activate to sort column ascending"
-                                                                        style="width: 162px;">Role
+                                                                        style="width: 162px;">Note
                                                                     </th>
                                                                     <th style="width: 162px;">
                                                                         Action
@@ -107,10 +100,9 @@
                                                             </thead>
                                                             <tfoot>
                                                                 <tr>
-                                                                    <th rowspan="1" colspan="1">User ID</th>
-                                                                    <th rowspan="1" colspan="1">Email</th>
+                                                                    <th rowspan="1" colspan="1">Unit</th>
                                                                     <th rowspan="1" colspan="1">Name</th>
-                                                                    <th rowspan="1" colspan="1">Role</th>
+                                                                    <th rowspan="1" colspan="1">Note</th>
                                                                     <th rowspan="1" colspan="1">Action</th>
                                                                 </tr>
                                                             </tfoot>
@@ -150,23 +142,22 @@
                     <div id="overlay"></div>
 
                     <!-- Modal Structure -->
-                    <div id="formUserModal" class="modal" tabindex="-1" style="display: none;">
+                    <div id="unitModal" class="modal" tabindex="-1" style="display: none;">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Delete Confirmation</h5>
-                                    <button type="button" class="btn" id="closeUserModal"><i
+                                    <button type="button" class="btn" id="closeModalButton"><i
                                             class="fa-solid fa-xmark"></i></button>
                                 </div>
                                 <div class="modal-body">
-                                    
                                     <div id="deleteConfirmation" style="display:none;">
                                         <p class="mb-0">Are you sure, you want to delete it?</p>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button class="btn btn-secondary" id="closeOptionUserModal">Close</button>
-                                    <button class="btn btn-primary" id="submitUser">Save changes</button>
+                                    <button class="btn btn-secondary" id="closeOptionModal">Close</button>
+                                    <button class="btn btn-primary" id="submitModal">Save changes</button>
                                 </div>
                             </div>
                         </div>
@@ -181,13 +172,13 @@
                 page: 1,
                 totalPages: 1,
                 limit: 3,
-                sortBy: "userid",
+                sortBy: "unit",
                 order: "asc",
                 query: ''
             }
 
             const readData = (params) => {
-                fetch(`http://localhost:3000/data/users?${new URLSearchParams(params).toString()}`).then((response) => {
+                fetch(`http://localhost:3000/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -196,25 +187,16 @@
                     .then((response) => {
                         let newParams = { ...params };
 
-                        let useridThead = document.getElementById('useridThead')
-                        let emailThead = document.getElementById('emailThead')
+                        let unitThead = document.getElementById('unitThead')
                         let nameThead = document.getElementById('nameThead')
-                        let roleThead = document.getElementById('roleThead')
+                        let noteThead = document.getElementById('noteThead')
 
-                        if (params.sortBy == "userid" && params.order == "asc") {
+                        if (params.sortBy == "unit" && params.order == "asc") {
                             useridThead.className = 'sorting sorting_asc'
-                        } else if (params.sortBy == "userid" && params.order == "desc") {
+                        } else if (params.sortBy == "unit" && params.order == "desc") {
                             useridThead.className = 'sorting sorting_desc'
                         } else {
                             useridThead.className = 'sorting'
-                        }
-
-                        if (params.sortBy == "email" && params.order == "asc") {
-                            emailThead.className = 'sorting sorting_asc'
-                        } else if (params.sortBy == "email" && params.order == "desc") {
-                            emailThead.className = 'sorting sorting_desc'
-                        } else {
-                            emailThead.className = 'sorting'
                         }
 
                         if (params.sortBy == "name" && params.order == "asc") {
@@ -225,12 +207,12 @@
                             nameThead.className = 'sorting'
                         }
 
-                        if (params.sortBy == "role" && params.order == "asc") {
-                            roleThead.className = 'sorting sorting_asc'
-                        } else if (params.sortBy == "role" && params.order == "desc") {
-                            roleThead.className = 'sorting sorting_desc'
+                        if (params.sortBy == "note" && params.order == "asc") {
+                            noteThead.className = 'sorting sorting_asc'
+                        } else if (params.sortBy == "note" && params.order == "desc") {
+                            noteThead.className = 'sorting sorting_desc'
                         } else {
-                            roleThead.className = 'sorting'
+                            noteThead.className = 'sorting'
                         }
 
                         let htmlTbody = '';
@@ -238,22 +220,20 @@
                             if (document.getElementById('user').value == item.name) {
                                 htmlTbody += `
                             <tr>
-                                <td>${item.userid}</td>
-                                <td>${item.email}</td>
+                                <td>${item.unit}</td>
                                 <td>${item.name}</td>
-                                <td>${item.role}</td>
+                                <td>${item.note}</td>
                                 <td></td>
                             </tr>
                             `
                             } else {
                                 htmlTbody += `
                             <tr>
-                                <td>${item.userid}</td>
-                                <td>${item.email}</td>
+                                <td>${item.unit}</td>
                                 <td>${item.name}</td>
-                                <td>${item.role}</td>
-                                <td><a href="/users/edit/${item.userid}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
-                                    <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.email}')"><i class="fa-solid fa-trash-can"></i></button>
+                                <td>${item.note}</td>
+                                <td><a href="/units/edit/${item.unit}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
+                                    <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.unit}')"><i class="fa-solid fa-trash-can"></i></button>
                                     </td>
                             </tr>
                             `
@@ -331,14 +311,13 @@
                 readData(readParams)
             })
 
-            const useridThead = document.getElementById("useridThead")
-            const emailThead = document.getElementById("emailThead")
+            const unitThead = document.getElementById("unitThead")
             const nameThead = document.getElementById("nameThead")
-            const roleThead = document.getElementById("roleThead")
+            const noteThead = document.getElementById("noteThead")
 
-            useridThead.onclick = function () {
-                if (readParams.sortBy != 'userid') {
-                    readParams.sortBy = 'userid'
+            unitThead.onclick = function () {
+                if (readParams.sortBy != 'unit') {
+                    readParams.sortBy = 'unit'
                     readParams.order = 'asc'
                 } else if (readParams.order == 'asc') {
                     readParams.order = 'desc'
@@ -348,17 +327,6 @@
                 readData(readParams)
             }
 
-            emailThead.onclick = function () {
-                if (readParams.sortBy != 'email') {
-                    readParams.sortBy = 'email'
-                    readParams.order = 'asc'
-                } else if (readParams.order == 'asc') {
-                    readParams.order = 'desc'
-                } else {
-                    readParams.order = 'asc'
-                }
-                readData(readParams)
-            }
             nameThead.onclick = function () {
                 if (readParams.sortBy != 'name') {
                     readParams.sortBy = 'name'
@@ -370,9 +338,10 @@
                 }
                 readData(readParams)
             }
-            roleThead.onclick = function () {
-                if (readParams.sortBy != 'role') {
-                    readParams.sortBy = 'role'
+
+            noteThead.onclick = function () {
+                if (readParams.sortBy != 'note') {
+                    readParams.sortBy = 'note'
                     readParams.order = 'asc'
                 } else if (readParams.order == 'asc') {
                     readParams.order = 'desc'
@@ -382,43 +351,43 @@
                 readData(readParams)
             }
 
-            const closeUserModal = document.getElementById('closeUserModal');
-            const closeOptionUserModal = document.getElementById('closeOptionUserModal');
-            const formUserModal = document.getElementById('formUserModal');
-            const submitUser = document.getElementById('submitUser');
+            const closeModalButton = document.getElementById('closeModalButton');
+            const closeOptionModal = document.getElementById('closeOptionModal');
+            const unitModal = document.getElementById('unitModal');
+            const submitModal = document.getElementById('submitModal');
             const deleteConfirmation = document.getElementById('deleteConfirmation');
             const overlay = document.getElementById('overlay');
 
-            function openDeleteModal(email) {
-                formUserModal.style.display = 'block'
+            function openDeleteModal(unit) {
+                unitModal.style.display = 'block'
                 deleteConfirmation.style.display = 'block'
                 overlay.style.display = 'block'
-                closeOptionUserModal.innerText = "No"
-                submitUser.innerText = "Yes"
-                submitUser.onclick = function () { deleteUser(email); }
+                closeOptionModal.innerText = "No"
+                submitModal.innerText = "Yes"
+                submitModal.onclick = function () { deleteUser(unit); }
             }
 
             function closeModal() {
-                formUserModal.style.display = 'none';
+                unitModal.style.display = 'none';
                 overlay.style.display = 'none';
             }
 
-            closeUserModal.onclick = function () {
+            closeModalButton.onclick = function () {
                 closeModal()
             }
 
-            closeOptionUserModal.onclick = function () {
+            closeOptionModal.onclick = function () {
                 closeModal()
             }
 
-            const deleteUser = (email) => {
-                fetch(`http://localhost:3000/data/users/delete/`, {
+            const deleteUser = (unit) => {
+                fetch(`http://localhost:3000/data/units/delete/`, {
                     method: 'PUT',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email })
+                    body: JSON.stringify({ unit })
                 }).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -426,7 +395,7 @@
                     return response.json();
                 }).then((response) => {
                     closeModal()
-                    readParams.sortBy = 'userid'
+                    readParams.sortBy = 'unit'
                     readParams.order = 'asc'
                     readData(readParams)
                 });

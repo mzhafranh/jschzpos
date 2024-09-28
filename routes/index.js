@@ -259,9 +259,9 @@ module.exports = function (db) {
         res.render('usersedit', { mode, userid, user: req.session.user })
     })
 
-    router.get('/unit', (req, res) => {
-        const mode = 'unit'
-        res.render('unit', { mode, user: req.session.user })
+    router.get('/units', helpers.isLoggedIn, (req, res) => {
+        const mode = 'goods'
+        res.render('units', { mode, user: req.session.user })
     })
 
     router.get('/register', (req, res) => {

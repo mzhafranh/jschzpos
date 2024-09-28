@@ -126,6 +126,187 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/users', (req, res,) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const values = []
+        var count = 1;
+        var sortBy = req.query.sortBy == '' ? `userid` : req.query.sortBy;
+        var order = req.query.order == '' ? `asc` : req.query.order;
+
+        console.log(req.query)
+
+        if (req.query.query) {
+            wheres.push(`email ilike '%' || $${count++} || '%' OR name ilike '%' || $${count++} || '%'`);
+            values.push(req.query.query)
+            values.push(req.query.query)
+        }
+
+        let sql = 'SELECT COUNT(*) AS total FROM users';
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+
+        try {
+            db.query(sql, values, (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                const totalPages = Math.ceil(data.rows[0].total / limit)
+                const totalData = data.rows[0].total
+                sql = 'SELECT * FROM users'
+                if (wheres.length > 0) {
+                    sql += ` WHERE ${wheres.join(' AND ')}`
+                }
+                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+                console.log('SQL: ' + sql)
+                console.log([...values, limit, offset])
+                db.query(sql, [...values, limit, offset], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    res.status(200).json({
+                        data: data.rows,
+                        totalData,
+                        totalPages,
+                        limit: limit,
+                        page: parseInt(page)
+                    })
+                })
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.post('/users/add', (req, res) => {
+        try {
+            const { email, name, password, role } = req.body
+
+            console.log(req.body)
+
+            bcrypt.hash(password, saltRounds, function (err, hash) {
+                if (err) return res.send(err)
+                db.query('INSERT INTO users (email, name, password, role) VALUES ($1, $2, $3, $4)', [email, name, hash, role], (err) => {
+                    if (err) {
+                        console.error(err)
+                    }
+                })
+                res.status(200).json({ message: "ok" })
+            });
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.get('/users/edit/:id', (req, res) => {
+        try {
+            let userid = req.params.id
+            db.query('SELECT * FROM users WHERE userid = $1', [userid], (err, data) => {
+                // console.log(data)
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({
+                    data: data.rows
+                })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.put('/users/edit/:id', (req, res) => {
+        try {
+            let userid = req.params.id
+            const { email, name, role } = req.body
+            console.log('sampai sini')
+            db.query('UPDATE users SET email = $1, name = $2, role = $3 WHERE userid = $4', [email, name, role, userid], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({ message: "ok" })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.put('/users/delete/', (req, res) => {
+        try {
+            db.query("DELETE FROM users WHERE email = $1", [req.body.email], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
+        }
+    })
+
+    router.get('/units', (req, res,) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const values = []
+        var count = 1;
+        var sortBy = req.query.sortBy == '' ? `unit` : req.query.sortBy;
+        var order = req.query.order == '' ? `asc` : req.query.order;
+
+        console.log(req.query)
+
+        if (req.query.query) {
+            wheres.push(`unit ilike '%' || $${count++} || '%' OR name ilike '%' || $${count++} || '%' OR note ilike '%' || $${count++} || '%'`);
+            values.push(req.query.query)
+            values.push(req.query.query)
+            values.push(req.query.query)
+        }
+
+        let sql = 'SELECT COUNT(*) AS total FROM units';
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+
+        try {
+            db.query(sql, values, (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                const totalPages = Math.ceil(data.rows[0].total / limit)
+                const totalData = data.rows[0].total
+                sql = 'SELECT * FROM units'
+                if (wheres.length > 0) {
+                    sql += ` WHERE ${wheres.join(' AND ')}`
+                }
+                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+                console.log('SQL: ' + sql)
+                console.log([...values, limit, offset])
+                db.query(sql, [...values, limit, offset], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    res.status(200).json({
+                        data: data.rows,
+                        totalData,
+                        totalPages,
+                        limit: limit,
+                        page: parseInt(page)
+                    })
+                })
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
 
 
 
@@ -494,143 +675,7 @@ module.exports = function (db) {
         }
     })
 
-    router.get('/users', (req, res,) => {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
-        const offset = (page - 1) * limit;
-        const wheres = []
-        const values = []
-        const query = req.query.query
-        const filter = req.url
-        var count = 1;
-        var sortBy = req.query.sortBy == '' ? `userid` : req.query.sortBy;
-        var order = req.query.order == '' ? `asc` : req.query.order;
-
-        console.log(req.query)
-
-        if (req.query.query) {
-            wheres.push(`email ilike '%' || $${count++} || '%' OR name ilike '%' || $${count++} || '%'`);
-            values.push(req.query.query)
-            values.push(req.query.query)
-        }
-
-        // if (req.query.email) {
-        //     wheres.push(`email ilike '%' || $${count++} || '%'`);
-        //     values.push(req.query.email);
-        // }
-
-        // if (req.query.name) {
-        //     wheres.push(`name ilike '%' || $${count++} || '%'`);
-        //     values.push(req.query.name);
-        // }
-
-        let sql = 'SELECT COUNT(*) AS total FROM users';
-        if (wheres.length > 0) {
-            sql += ` WHERE ${wheres.join(' AND ')}`
-        }
-
-        try {
-            db.query(sql, values, (err, data) => {
-                if (err) {
-                    console.error(err);
-                }
-                const totalPages = Math.ceil(data.rows[0].total / limit)
-                const totalData = data.rows[0].total
-                sql = 'SELECT * FROM users'
-                if (wheres.length > 0) {
-                    sql += ` WHERE ${wheres.join(' AND ')}`
-                }
-                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
-                console.log('SQL: ' + sql)
-                console.log([...values, limit, offset])
-                db.query(sql, [...values, limit, offset], (err, data) => {
-                    if (err) {
-                        console.error(err);
-                    }
-                    res.status(200).json({
-                        data: data.rows,
-                        totalData,
-                        totalPages,
-                        limit: limit,
-                        page: parseInt(page)
-                    })
-                })
-            })
-        } catch (err) {
-            res.status(500).json({ message: "error ambil data" })
-        }
-
-    })
-
-    router.post('/users/add', (req, res) => {
-        try {
-            const { email, name, password, role } = req.body
-
-            console.log(req.body)
-
-            bcrypt.hash(password, saltRounds, function (err, hash) {
-                if (err) return res.send(err)
-                db.query('INSERT INTO users (email, name, password, role) VALUES ($1, $2, $3, $4)', [email, name, hash, role], (err) => {
-                    if (err) {
-                        console.error(err)
-                    }
-                })
-                res.status(200).json({ message: "ok" })
-            });
-        } catch (err) {
-            console.log(err)
-            res.status(500).json({ message: "error save data" })
-        }
-    })
-
-    router.get('/users/edit/:id', (req, res) => {
-        try {
-            let userid = req.params.id
-            db.query('SELECT * FROM users WHERE userid = $1', [userid], (err, data) => {
-                // console.log(data)
-                if (err) {
-                    console.error(err)
-                }
-                res.status(200).json({
-                    data: data.rows
-                })
-            })
-        } catch (err) {
-            console.log(err)
-            res.status(500).json({ message: "error save data" })
-        }
-    })
-
-    router.put('/users/edit/:id', (req, res) => {
-        try {
-            let userid = req.params.id
-            const { email, name, role } = req.body
-            console.log('sampai sini')
-            db.query('UPDATE users SET email = $1, name = $2, role = $3 WHERE userid = $4', [email, name, role, userid], (err, data) => {
-                if (err) {
-                    console.error(err)
-                }
-                res.status(200).json({ message: "ok" })
-            })
-        } catch (err) {
-            console.log(err)
-            res.status(500).json({ message: "error save data" })
-        }
-    })
-
-    router.put('/users/delete/', (req, res) => {
-        try {
-            db.query("DELETE FROM users WHERE email = $1", [req.body.email], (err) => {
-                if (err) {
-                    console.error(err);
-                }
-            })
-            res.status(200).json({ message: "ok" })
-        } catch (err) {
-            console.log(err)
-            res.status(500).json({ message: "error delete data" })
-        }
-    })
+    
 
     router.get('/barang', (req, res,) => {
         const page = req.query.page || 1;
