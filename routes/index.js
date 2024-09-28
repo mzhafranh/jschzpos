@@ -127,6 +127,85 @@ module.exports = function (db) {
         // })
     })
 
+    router.get('/register', (req, res) => {
+        const mode = 'register'
+        res.render('register', { mode })
+    })
+
+    router.post('/register', (req, res) => {
+        const { email, username, password, role } = req.body
+        db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
+            if (err) return res.send(err)
+            if (data.rows.length > 0) return res.send("Email sudah terdaftar")
+            bcrypt.hash(password, saltRounds, function (err, hash) {
+                if (err) return res.send(err)
+                db.query('INSERT INTO users VALUES ($1, $2, $3, $4)', [email, username, hash, role], (err) => {
+                    if (err) return res.send(err)
+                })
+                res.redirect('/users')
+            });
+        })
+    })
+
+    router.get('/login', (req, res) => {
+        res.render('login', { info: req.flash('info') })
+    })
+
+    router.post('/login', (req, res) => {
+        const { email, password } = req.body
+        
+        db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
+            // console.log(data)
+            if (err) return res.send(err)
+            if (data.rows.length == 0) {
+                req.flash('info', 'Email Not Registered')
+                return res.redirect('/login');
+            }
+            bcrypt.compare(password, data.rows[0].password, function (err, result) {
+                if (err) return res.send(err)
+                if (!result) {
+                    req.flash('info', 'Password Incorrect')
+                    return res.redirect('/login');
+                }
+
+                req.session.user = data.rows[0]
+                if (req.session.user.role == "admin") {
+                    res.redirect('/')
+                }
+                if (req.session.user.role == "op") {
+                    res.redirect('/sell')
+                }
+            });
+        })
+    })
+
+
+    router.get('/users', helpers.isLoggedIn, (req, res) => {
+        const mode = 'users'
+        res.render('users', { mode, user: req.session.user })
+    })
+
+    router.get('/users/add', helpers.isLoggedIn, (req, res) => {
+        const mode = 'users'
+        res.render('usersadd', { mode, user: req.session.user })
+    })
+
+    router.get('/users/edit/:id', helpers.isLoggedIn, (req, res) => {
+        let userid = req.params.id
+        const mode = 'users'
+        res.render('usersedit', { mode, userid, user: req.session.user })
+    })
+
+    router.get('/units', helpers.isLoggedIn, (req, res) => {
+        const mode = 'goods'
+        res.render('units', { mode, user: req.session.user })
+    })
+
+    router.get('/units/add', helpers.isLoggedIn, (req, res) => {
+        const mode = 'goods'
+        res.render('unitsadd', { mode, user: req.session.user })
+    })
+
 
     router.get('/add', (req, res) => {
         res.render('add')
@@ -243,78 +322,8 @@ module.exports = function (db) {
         res.render('supplier', { mode, user: req.session.user })
     })
 
-    router.get('/users', helpers.isLoggedIn, (req, res) => {
-        const mode = 'users'
-        res.render('users', { mode, user: req.session.user })
-    })
+   
 
-    router.get('/users/add', helpers.isLoggedIn, (req, res) => {
-        const mode = 'users'
-        res.render('usersadd', { mode, user: req.session.user })
-    })
-
-    router.get('/users/edit/:id', helpers.isLoggedIn, (req, res) => {
-        let userid = req.params.id
-        const mode = 'users'
-        res.render('usersedit', { mode, userid, user: req.session.user })
-    })
-
-    router.get('/units', helpers.isLoggedIn, (req, res) => {
-        const mode = 'goods'
-        res.render('units', { mode, user: req.session.user })
-    })
-
-    router.get('/register', (req, res) => {
-        const mode = 'register'
-        res.render('register', { mode })
-    })
-
-    router.post('/register', (req, res) => {
-        const { email, username, password, role } = req.body
-        db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
-            if (err) return res.send(err)
-            if (data.rows.length > 0) return res.send("Email sudah terdaftar")
-            bcrypt.hash(password, saltRounds, function (err, hash) {
-                if (err) return res.send(err)
-                db.query('INSERT INTO users VALUES ($1, $2, $3, $4)', [email, username, hash, role], (err) => {
-                    if (err) return res.send(err)
-                })
-                res.redirect('/users')
-            });
-        })
-    })
-
-    router.get('/login', (req, res) => {
-        res.render('login', { info: req.flash('info') })
-    })
-
-    router.post('/login', (req, res) => {
-        const { email, password } = req.body
-        
-        db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
-            // console.log(data)
-            if (err) return res.send(err)
-            if (data.rows.length == 0) {
-                req.flash('info', 'Email Not Registered')
-                return res.redirect('/login');
-            }
-            bcrypt.compare(password, data.rows[0].password, function (err, result) {
-                if (err) return res.send(err)
-                if (!result) {
-                    req.flash('info', 'Password Incorrect')
-                    return res.redirect('/login');
-                }
-
-                req.session.user = data.rows[0]
-                if (req.session.user.role == "admin") {
-                    res.redirect('/')
-                }
-                if (req.session.user.role == "op") {
-                    res.redirect('/sell')
-                }
-            });
-        })
-    })
-
+   
     return router;
 }
