@@ -212,6 +212,11 @@ module.exports = function (db) {
         res.render('unitsedit', { mode, unitId, user: req.session.user })
     })
 
+    router.get('/goods', helpers.isLoggedIn, (req, res) => {
+        const mode = 'goods'
+        res.render('goods', { mode, user: req.session.user })
+    })
+
 
     router.get('/add', (req, res) => {
         res.render('add')
