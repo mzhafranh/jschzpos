@@ -238,6 +238,13 @@ module.exports = function (db) {
         res.render('suppliersadd', { mode, user: req.session.user })
     })
 
+    router.get('/suppliers/edit/:id', helpers.isLoggedIn, (req, res) => {
+        let supplierId = req.params.id
+        const mode = 'supplier'
+        res.render('suppliersedit', { mode, supplierId, user: req.session.user })
+    })
+
+
     router.get('/add', (req, res) => {
         res.render('add')
     })

@@ -595,6 +595,53 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/suppliers/edit/:id', (req, res) => {
+        try {
+            let supplierId = req.params.id
+            db.query('SELECT * FROM suppliers WHERE supplierid = $1', [supplierId], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({
+                    data: data.rows
+                })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.put('/suppliers/edit/:id', (req, res) => {
+        try {
+            let supplierId = req.params.id
+            const { name, address, phone } = req.body
+            db.query('UPDATE suppliers SET name = $1, address = $2, phone = $3 WHERE supplierid = $4', [name, address, phone, supplierId], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({ message: "ok" })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.delete('/suppliers/delete/', (req, res) => {
+        try {
+            db.query("DELETE FROM suppliers WHERE supplierid = $1", [req.body.supplierid], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
+        }
+    })
+
 
     router.post('/add', (req, res) => {
         add(req.body.id, req.body.string, parseInt(req.body.integer), parseFloat(req.body.float), req.body.date, req.body.boolean, (err) => {
