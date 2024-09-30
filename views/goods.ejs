@@ -92,13 +92,13 @@
                                                                         aria-controls="dataTable" rowspan="1"
                                                                         colspan="1"
                                                                         aria-label="Role: activate to sort column ascending"
-                                                                        style="width: 162px;">Stock
+                                                                        style="width: 81px;">Stock
                                                                     </th>
                                                                     <th id="unitThead" class="sorting" tabindex="0"
                                                                         aria-controls="dataTable" rowspan="1"
                                                                         colspan="1"
                                                                         aria-label="Role: activate to sort column ascending"
-                                                                        style="width: 162px;">Unit
+                                                                        style="width: 81px;">Unit
                                                                     </th>
                                                                     <th id="purchasePriceThead" class="sorting"
                                                                         tabindex="0" aria-controls="dataTable"
@@ -112,7 +112,7 @@
                                                                         aria-label="Role: activate to sort column ascending"
                                                                         style="width: 162px;">Selling Price
                                                                     </th>
-                                                                    <th style="width: 162px;">
+                                                                    <th style="width: 324px;">
                                                                         Picture
                                                                     </th>
                                                                     <th style="width: 162px;">
@@ -278,7 +278,7 @@
                                 <td>${item.unit}</td>
                                 <td>${item.purchaseprice}</td>
                                 <td>${item.sellingprice}</td>
-                                <td>${item.picture}</td>
+                                <td><img class="img-fluid" src = "/img/goods/${item.picture}" alt = "${item.name}" style="width: 128px;"></td>
                                 <td><a href="/goods/edit/${item.barcode}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
                                     <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.barcode}')"><i class="fa-solid fa-trash-can"></i></button>
                                     </td>

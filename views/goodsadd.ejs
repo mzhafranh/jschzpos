@@ -38,25 +38,25 @@
                                                 <label for="stock" class="col-form-label col-md-2">Stock</label>
                                                 <div class="col-md-10 pl-0">
                                                     <input type="number" class="form-control" id="stock" name="stock"
-                                                        required placeholder="insert stock">
+                                                        required placeholder="0">
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
                                                 <label for="purchaseprice" class="col-form-label col-md-2">Purchase
                                                     Price</label>
                                                 <div class="col-md-10 pl-0">
-                                                    <input type="number" class="form-control" step="0.01"
+                                                    <input type="number" class="form-control"
                                                         id="purchaseprice" name="purchaseprice" required
-                                                        placeholder="0.00"></input>
+                                                        placeholder="0"></input>
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
                                                 <label for="sellingprice" class="col-form-label col-md-2">Selling
                                                     Price</label>
                                                 <div class="col-md-10 pl-0">
-                                                    <input type="number" class="form-control" step="0.01"
+                                                    <input type="number" class="form-control"
                                                         id="sellingprice" name="sellingprice" required
-                                                        placeholder="0.00"></input>
+                                                        placeholder="0"></input>
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
@@ -154,11 +154,11 @@
             document.getElementById('addGoodForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(addGoodForm);
-                fetch('http://localhost:3000/data/units/add', {
+                fetch('http://localhost:3000/data/goods/add', {
                     method: 'POST',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/units'
+                    window.location.href = 'http://localhost:3000/goods'
                 })
             });
         </script>

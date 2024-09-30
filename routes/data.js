@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+var path = require('path');
 
 /* GET home page. */
 module.exports = function (db) {
@@ -370,6 +371,105 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/goods', (req, res,) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const values = []
+        var count = 1;
+        var sortBy = req.query.sortBy == '' ? `barcode` : req.query.sortBy;
+        var order = req.query.order == '' ? `asc` : req.query.order;
+
+        console.log(req.query)
+
+        if (req.query.query) {
+            wheres.push(`barcode ilike '%' || $${count++} || '%' OR name ilike '%' || $${count++} || '%'`);
+            values.push(req.query.query)
+            values.push(req.query.query)
+        }
+
+        let sql = 'SELECT COUNT(*) AS total FROM goods';
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+
+        try {
+            db.query(sql, values, (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                const totalPages = Math.ceil(data.rows[0].total / limit)
+                const totalData = data.rows[0].total
+                sql = 'SELECT * FROM goods'
+                if (wheres.length > 0) {
+                    sql += ` WHERE ${wheres.join(' AND ')}`
+                }
+                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+                console.log('SQL: ' + sql)
+                console.log([...values, limit, offset])
+                db.query(sql, [...values, limit, offset], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    res.status(200).json({
+                        data: data.rows,
+                        totalData,
+                        totalPages,
+                        limit: limit,
+                        page: parseInt(page)
+                    })
+                })
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.post('/goods/add', (req, res) => {
+        try {
+            const { barcode, name, stock, purchaseprice, sellingprice, unit} = req.body
+            // console.log(req.body)
+            // console.log(req.files)
+            if (!req.files || Object.keys(req.files).length === 0) {
+                res.status(400).send('No files were uploaded.');
+            } else {
+                var image = req.files.image
+                var imageFilename = barcode + Date.now() + path.extname(image.name)
+                var filePath = path.join(__dirname, '..', 'public', 'img', 'goods', imageFilename)
+                image.mv(filePath, (err) => {
+                    if (err) {
+                      return res.status(500).json({ message: "error save data" })
+                    }
+                    db.query('INSERT INTO goods VALUES ($1, $2, $3, $4, $5, $6, $7)', [barcode, name, stock, purchaseprice, sellingprice, unit, imageFilename], (err) => {
+                        if (err) {
+                            console.error(err)
+                        }
+                    })
+                })
+            }
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+
+
+    router.delete('/goods/delete/', (req, res) => {
+        try {
+            db.query("DELETE FROM goods WHERE barcode = $1", [req.body.barcode], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
+        }
+    })
 
 
     router.post('/add', (req, res) => {
