@@ -233,6 +233,11 @@ module.exports = function (db) {
         res.render('supplier', { mode, user: req.session.user })
     })
 
+    router.get('/suppliers/add', helpers.isLoggedIn, (req, res) => {
+        const mode = 'supplier'
+        res.render('suppliersadd', { mode, user: req.session.user })
+    })
+
     router.get('/add', (req, res) => {
         res.render('add')
     })
