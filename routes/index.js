@@ -228,6 +228,10 @@ module.exports = function (db) {
         res.render('goodsedit', { mode, barcode, user: req.session.user })
     })
 
+    router.get('/suppliers', helpers.isLoggedIn, (req, res) => {
+        const mode = 'supplier'
+        res.render('supplier', { mode, user: req.session.user })
+    })
 
     router.get('/add', (req, res) => {
         res.render('add')
@@ -339,13 +343,5 @@ module.exports = function (db) {
         
     })
 
-    router.get('/supplier', (req, res) => {
-        const mode = 'supplier'
-        res.render('supplier', { mode, user: req.session.user })
-    })
-
-   
-
-   
     return router;
 }
