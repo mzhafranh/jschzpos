@@ -455,7 +455,59 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/goods/edit/:barcode', (req, res) => {
+        try {
+            let barcode = req.params.barcode
+            db.query('SELECT * FROM goods WHERE barcode = $1', [barcode], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({
+                    data: data.rows
+                })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
 
+    router.put('/goods/edit/:barcode', (req, res) => {
+        try {
+            let barcode = req.params.barcode
+            const {name, stock, purchaseprice, sellingprice, unit} = req.body
+            console.log(req.files)
+            if (!req.files || Object.keys(req.files).length === 0) {
+                console.log('sampai A')
+                console.log(req.body)
+                db.query('UPDATE goods SET name = $1, stock = $2, purchaseprice = $3, sellingprice = $4, unit = $5 WHERE barcode = $6', [name, stock, purchaseprice, sellingprice, unit, barcode], (err) => {
+                    if (err) {
+                        console.error(err)
+                    }
+                    res.status(200).json({ message: "ok" })
+                })
+            } else {
+                var image = req.files.image
+                var imageFilename = barcode + Date.now() + path.extname(image.name)
+                var filePath = path.join(__dirname, '..', 'public', 'img', 'goods', imageFilename)
+                image.mv(filePath, (err) => {
+                    if (err) {
+                      return res.status(500).json({ message: "error save data" })
+                    }
+                    console.log('sampai B')
+                    db.query('UPDATE goods SET name = $1, stock = $2, purchaseprice = $3, sellingprice = $4, unit = $5, picture = $6 WHERE barcode = $7', [name, stock, purchaseprice, sellingprice, unit, imageFilename, barcode], (err) => {
+                        if (err) {
+                            console.error(err)
+                        }
+                        res.status(200).json({ message: "ok" })
+                    })
+                })
+            }                
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
 
     router.delete('/goods/delete/', (req, res) => {
         try {

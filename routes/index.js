@@ -222,6 +222,12 @@ module.exports = function (db) {
         res.render('goodsadd', { mode, user: req.session.user })
     })
 
+    router.get('/goods/edit/:barcode', helpers.isLoggedIn, (req, res) => {
+        let barcode = req.params.barcode
+        const mode = 'goods'
+        res.render('goodsedit', { mode, barcode, user: req.session.user })
+    })
+
 
     router.get('/add', (req, res) => {
         res.render('add')

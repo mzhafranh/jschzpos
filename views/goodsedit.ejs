@@ -19,12 +19,12 @@
                                         <h5 class="m-0 font-weight-bold text-primary">Form add</h5>
                                     </div>
                                     <div class="card-body">
-                                        <form id="addGoodForm">
+                                        <form id="editGoodForm">
                                             <div class="row mb-3">
                                                 <label for="barcode" class="col-form-label col-md-2">Barcode</label>
                                                 <div class="col-md-10 pl-0">
                                                     <input type="text" class="form-control" id="barcode" name="barcode"
-                                                        required placeholder="insert barcode">
+                                                        required placeholder="insert barcode" disabled>
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
@@ -45,25 +45,21 @@
                                                 <label for="purchaseprice" class="col-form-label col-md-2">Purchase
                                                     Price</label>
                                                 <div class="col-md-10 pl-0">
-                                                    <input type="number" class="form-control"
-                                                        id="purchaseprice" name="purchaseprice" required
-                                                        placeholder="0"></input>
+                                                    <input type="number" class="form-control" id="purchaseprice"
+                                                        name="purchaseprice" required placeholder="0"></input>
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
                                                 <label for="sellingprice" class="col-form-label col-md-2">Selling
                                                     Price</label>
                                                 <div class="col-md-10 pl-0">
-                                                    <input type="number" class="form-control"
-                                                        id="sellingprice" name="sellingprice" required
-                                                        placeholder="0"></input>
+                                                    <input type="number" class="form-control" id="sellingprice"
+                                                        name="sellingprice" required placeholder="0"></input>
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
                                                 <label for="unit" class="col-form-label col-md-2">Unit</label>
                                                 <div class="col-md-10 pl-0">
-                                                    <!-- <input type="text" class="form-control" id="unit" name="unit"
-                                                        required placeholder="insert unit"> -->
                                                     <select name="unit" id="unit" class="form-control">
                                                     </select>
                                                 </div>
@@ -72,11 +68,11 @@
                                                 <label for="picture" class="col-form-label col-md-2">Picture</label>
                                                 <div class="col-md-10 pl-0 custom-file">
                                                     <input type="file" class="custom-file-input" id="image" name="image"
-                                                        placeholder="Choose file" accept="image/*" required>
+                                                        placeholder="Choose file" accept="image/*">
                                                     <label class="custom-file-label" for="image">Choose file</label>
                                                 </div>
                                             </div>
-                                            <div class="row mb-3" id="preview-display" style="display: none;">
+                                            <div class="row mb-3" id="preview-display" style="display: block;">
                                                 <div class="d-flex">
                                                     <label for="preview" class="col-form-label col-md-2">Preview</label>
                                                     <img src="" alt="" class="form-control col-auto" id="preview"
@@ -92,7 +88,7 @@
                                             <span class="text">Save</span>
                                         </button>
                                         </form>
-                                        <a href="/goods" class="btn btn-warning btn-icon-split">
+                                        <a href="/units" class="btn btn-warning btn-icon-split">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-rotate-left"></i>
                                             </span>
@@ -117,23 +113,38 @@
                 query: ''
             }
 
-            const getUnitData = (params) => {
+            const getData = (params) => {
                 fetch(`http://localhost:3000/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     return response.json();
-                })
-                    .then((response) => {
+                }).then((response) => {
                         let selectOptions = ''
                         response.data.forEach((item, index) => {
                             selectOptions += `<option value ="${item.unit}">${item.unit}</option>`
                         })
                         document.getElementById('unit').innerHTML = selectOptions
+                    }).then(() => {
+                        fetch(`http://localhost:3000/data/goods/edit/<%=barcode%>`).then((response) => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        }).then((response) => {
+                            console.log(response)
+                            document.getElementById('barcode').value = response.data[0].barcode
+                            document.getElementById('name').value = response.data[0].name
+                            document.getElementById('stock').value = response.data[0].stock
+                            document.getElementById('purchaseprice').value = response.data[0].purchaseprice
+                            document.getElementById('sellingprice').value = response.data[0].sellingprice
+                            document.getElementById('unit').value = response.data[0].unit
+                            document.getElementById('preview').src = `/img/goods/${response.data[0].picture}`
+                        })
                     })
             }
 
-            getUnitData(readParams)
+            getData(readParams)
 
             document.getElementById('image').addEventListener('change', function (event) {
                 const file = event.target.files[0];
@@ -150,12 +161,12 @@
                 }
             });
 
-            const addGoodForm = document.getElementById('addGoodForm');
-            document.getElementById('addGoodForm').addEventListener('submit', function (event) {
+            const editGoodForm = document.getElementById('editGoodForm');
+            document.getElementById('editGoodForm').addEventListener('submit', function (event) {
                 event.preventDefault()
-                const formData = new FormData(addGoodForm);
-                fetch('http://localhost:3000/data/goods/add', {
-                    method: 'POST',
+                const formData = new FormData(editGoodForm);
+                fetch(`http://localhost:3000/data/goods/edit/<%=barcode%>`, {
+                    method: 'PUT',
                     body: formData,
                 }).then((response) => {
                     window.location.href = 'http://localhost:3000/goods'
