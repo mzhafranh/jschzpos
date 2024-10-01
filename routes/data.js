@@ -641,6 +641,72 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/purchases', (req, res,) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const values = []
+        var count = 1;
+        var sortBy = req.query.sortBy == '' ? `invoice` : req.query.sortBy;
+        var order = req.query.order == '' ? `asc` : req.query.order;
+
+        console.log(req.query)
+
+        if (req.query.query) {
+            wheres.push(`invoice ilike '%' || $${count++} || '%'`);
+            values.push(req.query.query)
+        }
+
+        let sql = 'SELECT COUNT(*) AS total FROM purchases';
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+
+        try {
+            db.query(sql, values, (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                const totalPages = Math.ceil(data.rows[0].total / limit)
+                const totalData = data.rows[0].total
+                sql = 'SELECT * FROM purchases'
+                if (wheres.length > 0) {
+                    sql += ` WHERE ${wheres.join(' AND ')}`
+                }
+                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+                console.log('SQL: ' + sql)
+                console.log([...values, limit, offset])
+                db.query(sql, [...values, limit, offset], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    res.status(200).json({
+                        data: data.rows,
+                        totalData,
+                        totalPages,
+                        limit: limit,
+                        page: parseInt(page)
+                    })
+                })
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.get('/invoice', async (req, res,) => {
+        try {
+            const currentInvoice =  await db.query('SELECT generate_invoice_number() AS invoice')
+            const timeNow = await db.query('SELECT get_current_time() AS time')
+            res.json({
+                invoice: currentInvoice.rows[0].invoice,
+                time: timeNow.rows[0].time
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
 
     router.post('/add', (req, res) => {
         add(req.body.id, req.body.string, parseInt(req.body.integer), parseFloat(req.body.float), req.body.date, req.body.boolean, (err) => {
@@ -650,9 +716,6 @@ module.exports = function (db) {
         })
         res.redirect('/');
     })
-
-
-
 
 
     router.post('/edit/:id', (req, res) => {
