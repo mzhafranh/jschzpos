@@ -1,0 +1,421 @@
+<%- include('partials/header')%>
+
+    <head>
+        <style>
+            /* Dark overlay for background when modal is open */
+            #overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                /* Semi-transparent black */
+                z-index: 1050;
+                display: none;
+            }
+
+            /* Modal should be above the dark overlay */
+            #formModal {
+                z-index: 1060;
+            }
+        </style>
+    </head>
+
+    <body id="page-top">
+        <!-- Page Wrapper -->
+        <div id="wrapper">
+            <%- include('partials/sidebar menu')%>
+                <!-- Content Wrapper -->
+                <div id="content-wrapper" class="d-flex flex-column">
+                    <!-- Main Content -->
+                    <div id="content">
+                        <%- include('partials/topbar menu')%>
+                            <!-- Begin Page Content -->
+                            <div class="container-fluid">
+                                <!-- Page Heading -->
+                                <input type="hidden" name="user" id="user" value="<%= user.name %>">
+                                <h3 class="h3 mb-0 text-gray-800">Purchases</h3>
+                                <h5 class="h5 mt-2 text-gray-600">This is data of Purchases</h5>
+
+                                <div class="card shadow mb-4">
+                                    <div class="card-header">
+                                        <a href="/purchases/add" class="btn btn-primary btn-icon-split">
+                                            <span class="icon text-white-50">
+                                                <i class="fa-solid fa-plus"></i></span>
+                                            <span class="text">Add</span>
+                                        </a>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <div id="dataTable_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                                                <div class="row">
+                                                    <div class="col-sm-12 col-md-6">
+                                                        <div class="dataTables_length"><label>Show
+                                                                <select name="dataTable_length" id="dataTable_length"
+                                                                    aria-controls="dataTable"
+                                                                    class="custom-select custom-select-sm form-control form-control-sm">
+                                                                    <option value=3>3</option>
+                                                                    <option value=10>10</option>
+                                                                    <option value=100>100</option>
+                                                                </select> entries</label></div>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-6">
+                                                        <div id="dataTable_filter" class="dataTables_filter">
+                                                            <label>Search:<input type="search" id="search-input"
+                                                                    class="form-control form-control-sm" placeholder=""
+                                                                    aria-controls="dataTable"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-sm-12">
+                                                        <table class="table table-bordered dataTable" id="dataTable"
+                                                            width="100%" cellspacing="0" role="grid"
+                                                            aria-describedby="dataTable_info" style="width: 100%;">
+                                                            <thead>
+                                                                <tr role="row">
+                                                                    <th id="invoiceThead" class="sorting sorting_asc"
+                                                                        tabindex="0" aria-controls="dataTable"
+                                                                        rowspan="1" colspan="1"
+                                                                        aria-label="Invoice: activate to sort column descending"
+                                                                        style="width: 162px;" aria-sort="ascending">Invoice
+                                                                    </th>
+                                                                    <th id="timeThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Time: activate to sort column ascending"
+                                                                        style="width: 162px;">Time
+                                                                    </th>
+                                                                    <th id="totalsumThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Total Summary: activate to sort column ascending"
+                                                                        style="width: 162px;">Total Summary
+                                                                    </th>
+                                                                    <th id="supplierThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Supplier: activate to sort column ascending"
+                                                                        style="width: 162px;">Supplier
+                                                                    </th>
+                                                                    <th style="width: 162px;">
+                                                                        Action
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tfoot>
+                                                                <tr>
+                                                                    <th rowspan="1" colspan="1">Invoice</th>
+                                                                    <th rowspan="1" colspan="1">Time</th>
+                                                                    <th rowspan="1" colspan="1">Total Summary</th>
+                                                                    <th rowspan="1" colspan="1">Supplier</th>
+                                                                    <th rowspan="1" colspan="1">Action</th>
+                                                                </tr>
+                                                            </tfoot>
+                                                            <tbody>
+
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-sm-12 col-md-5">
+                                                        <div class="dataTables_info" id="dataTable_info" role="status"
+                                                            aria-live="polite">Showing 0 to 0 of 0 entries</div>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-7">
+                                                        <div class="dataTables_paginate paging_simple_numbers"
+                                                            id="dataTable_paginate">
+                                                            <ul class="pagination">
+
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+
+                    <!-- Dark overlay -->
+                    <div id="overlay"></div>
+
+                    <!-- Modal Structure -->
+                    <div id="supplierModal" class="modal" tabindex="-1" style="display: none;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Delete Confirmation</h5>
+                                    <button type="button" class="btn" id="closeModalButton"><i
+                                            class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="deleteConfirmation" style="display:none;">
+                                        <p class="mb-0">Are you sure, you want to delete it?</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" id="closeOptionModal">No</button>
+                                    <button class="btn btn-primary" id="submitModal">Yes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('partials/footer')%>
+                </div>
+        </div>
+
+        <script>
+            var readParams = {
+                page: 1,
+                totalPages: 1,
+                limit: 3,
+                sortBy: "invoice",
+                order: "asc",
+                query: ''
+            }
+
+            const readData = (params) => {
+                fetch(`http://localhost:3000/data/purchases?${new URLSearchParams(params).toString()}`).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                    .then((response) => {
+                        let newParams = { ...params };
+
+                        let invoiceThead = document.getElementById('invoiceThead')
+                        let timeThead = document.getElementById('timeThead')
+                        let totalsumThead = document.getElementById('totalsumThead')
+                        let supplierThead = document.getElementById('supplierThead')
+
+                        if (params.sortBy == "invoice" && params.order == "asc") {
+                            invoiceThead.className = 'sorting sorting_asc'
+                        } else if (params.sortBy == "invoice" && params.order == "desc") {
+                            invoiceThead.className = 'sorting sorting_desc'
+                        } else {
+                            invoiceThead.className = 'sorting'
+                        }
+
+                        if (params.sortBy == "time" && params.order == "asc") {
+                            timeThead.className = 'sorting sorting_asc'
+                        } else if (params.sortBy == "time" && params.order == "desc") {
+                            timeThead.className = 'sorting sorting_desc'
+                        } else {
+                            timeThead.className = 'sorting'
+                        }
+
+                        if (params.sortBy == "totalsum" && params.order == "asc") {
+                            totalsumThead.className = 'sorting sorting_asc'
+                        } else if (params.sortBy == "totalsum" && params.order == "desc") {
+                            totalsumThead.className = 'sorting sorting_desc'
+                        } else {
+                            totalsumThead.className = 'sorting'
+                        }
+
+                        if (params.sortBy == "supplier" && params.order == "asc") {
+                            totalsumThead.className = 'sorting sorting_asc'
+                        } else if (params.sortBy == "supplier" && params.order == "desc") {
+                            totalsumThead.className = 'sorting sorting_desc'
+                        } else {
+                            totalsumThead.className = 'sorting'
+                        }
+
+                        let htmlTbody = '';
+                        response.data.forEach((item, index) => {
+                            htmlTbody += `
+                            <tr>
+                                <td>${item.invoice}</td>
+                                <td>${item.time}</td>
+                                <td>${item.totalsum}</td>
+                                <td>${item.supplier}</td>
+                                <td><a href="/purchases/edit/${item.invoice}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
+                                    <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
+                                    </td>
+                            </tr>
+                            `
+                        })
+                        document.querySelector('table tbody').innerHTML = htmlTbody
+
+                        let startingIndex = (response.page - 1) * response.limit
+
+                        let showEntryText = ''
+                        if (response.totalData == 0) {
+                            showEntryText += `Showing 0 to 0 of 0 entries`
+                        } else if (response.page * response.limit > response.totalData || response.limit == 0) {
+                            showEntryText += `Showing ${startingIndex + 1} to ${response.totalData} of ${response.totalData}`
+                        } else {
+                            showEntryText += `Showing ${startingIndex + 1} to ${response.page * response.limit} of ${response.totalData}`
+                        }
+                        document.getElementById('dataTable_info').innerText = showEntryText
+
+                        let paging = '';
+
+                        if (!(params.page == 1)) {
+                            newParams.page = params.page - 1;
+                            paging += `<li class="paginate_button page-item previous enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Previous</span></button></li>`
+                        } else {
+                            paging += `<li class="paginate_button page-item previous disabled"><span class="text-gray-600 page-link" aria-hidden="true">Previous</span></li>`
+                        }
+
+                        newParams.page = 1;
+                        for (let i = 1; i <= response.totalPages; i++) {
+                            if (response.page == i) {
+                                newParams.page = i;
+                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                            }
+                            else {
+                                newParams.page = i;
+                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                            }
+                        }
+
+                        if (!(params.page == response.totalPages)) {
+                            newParams.page = params.page + 1
+                            paging += `<li class="paginate_button page-item next enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Next</span></button></li>`
+                        } else {
+                            paging += `<li class="paginate_button page-item next disabled"><span class="text-gray-600 page-link" aria-hidden="true">Next</span></li>`
+
+                        }
+                        document.querySelector('.pagination').innerHTML = paging
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                    });
+            }
+
+            readData(readParams)
+
+            const resetForm = () => {
+                // document.getElementById('idObj').value = ''
+                // document.getElementById("form-search").reset();
+            }
+
+            document.getElementById('dataTable_length').addEventListener('change', function () {
+                const selectElement = document.getElementById('dataTable_length')
+                readParams.limit = parseInt(selectElement.value)
+                console.log(readParams)
+                readData(readParams)
+            });
+
+            document.getElementById('search-input').addEventListener('change', function () {
+                const searchInput = document.getElementById('search-input')
+                const selectElement = document.getElementById('dataTable_length')
+                readParams.limit = parseInt(selectElement.value)
+                readParams.query = searchInput.value
+                console.log(readParams.query)
+                readData(readParams)
+            })
+
+            const invoiceThead = document.getElementById("invoiceThead")
+            const timeThead = document.getElementById("timeThead")
+            const totalsumThead = document.getElementById("totalsumThead")
+            const supplierThead = document.getElementById("supplierThead")
+
+
+            invoiceThead.onclick = function () {
+                if (readParams.sortBy != 'invoice') {
+                    readParams.sortBy = 'invoice'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            timeThead.onclick = function () {
+                if (readParams.sortBy != 'time') {
+                    readParams.sortBy = 'time'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            totalsumThead.onclick = function () {
+                if (readParams.sortBy != 'totalsum') {
+                    readParams.sortBy = 'totalsum'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            supplierThead.onclick = function () {
+                if (readParams.sortBy != 'supplier') {
+                    readParams.sortBy = 'supplier'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            const closeModalButton = document.getElementById('closeModalButton');
+            const closeOptionModal = document.getElementById('closeOptionModal');
+            const supplierModal = document.getElementById('supplierModal');
+            const submitModal = document.getElementById('submitModal');
+            const deleteConfirmation = document.getElementById('deleteConfirmation');
+            const overlay = document.getElementById('overlay');
+
+            function openDeleteModal(invoice) {
+                supplierModal.style.display = 'block'
+                deleteConfirmation.style.display = 'block'
+                overlay.style.display = 'block'
+                submitModal.onclick = function () { deleteSupplier(invoice); }
+            }
+
+            function closeModal() {
+                supplierModal.style.display = 'none';
+                overlay.style.display = 'none';
+            }
+
+            closeModalButton.onclick = function () {
+                closeModal()
+            }
+
+            closeOptionModal.onclick = function () {
+                closeModal()
+            }
+
+            const deleteSupplier = (invoice) => {
+                fetch(`http://localhost:3000/data/purchases/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ invoice })
+                }).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                }).then((response) => {
+                    closeModal()
+                    readParams.sortBy = 'invoice'
+                    readParams.order = 'asc'
+                    readData(readParams)
+                });
+            }
+
+        </script>
+
+    </body>
+
+    </html>
