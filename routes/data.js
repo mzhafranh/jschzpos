@@ -474,8 +474,7 @@ module.exports = function (db) {
 
     router.put('/goods/edit/:barcode', (req, res) => {
         try {
-            let barcode = req.params.barcode
-            const {name, stock, purchaseprice, sellingprice, unit} = req.body
+            const {barcode, name, stock, purchaseprice, sellingprice, unit} = req.body
             console.log(req.files)
             if (!req.files || Object.keys(req.files).length === 0) {
                 console.log('sampai A')
