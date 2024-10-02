@@ -675,7 +675,7 @@ module.exports = function (db) {
                     sql += ` WHERE ${wheres.join(' AND ')}`
                 }
                 if (sortBy == 'invoice') {
-                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-\d{8}-(\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
+                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-\\d{8}-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
                 } else {
                     sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
                 }
@@ -685,6 +685,7 @@ module.exports = function (db) {
                     if (err) {
                         console.error(err);
                     }
+                    console.log(data.rows)
                     res.status(200).json({
                         data: data.rows,
                         totalData,
