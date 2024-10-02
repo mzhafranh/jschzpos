@@ -33,8 +33,10 @@
                                                     <input type="hidden" name="time" id="time">
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label for="operator" class="col-form-label">Operator</label>
-                                                    <input type="text" class="form-control" id="operator"
+                                                    <label for="operatorText" class="col-form-label">Operator</label>
+                                                    <input type="text" class="form-control" id="operatorText"
+                                                        name="operatorText" readonly>
+                                                    <input type="hidden" class="form-control" id="operator"
                                                         name="operator" readonly>
                                                 </div>
                                             </div>
@@ -44,7 +46,7 @@
                                         <div class="row mb-3">
                                             <div class="col-md-4">
                                                 <label for="itemcode" class="col-form-label">Goods Barcode</label>
-                                                <select name="itemcode" id="itemcode" class="form-control">
+                                                <select name="itemcode" id="itemcode" class="form-control" required>
                                                 </select>
                                             </div>
                                             <div class="col-md-4">
@@ -69,13 +71,16 @@
                                                 <input type="number" class="form-control" id="quantity" name="quantity">
                                             </div>
                                             <div class="col-md-4">
-                                                <label for="totalprice" class="col-form-label">Total Price</label>
-                                                <input type="number" class="form-control" id="totalprice"
+                                                <label for="totalpriceText" class="col-form-label">Total Price</label>
+                                                <input type="text" class="form-control" id="totalpriceText"
+                                                    name="totalpriceText" style="background-color: white; opacity: 1;"
+                                                    readonly>
+                                                <input type="hidden" class="form-control" id="totalprice"
                                                     name="totalprice" style="background-color: white; opacity: 1;"
                                                     readonly>
                                             </div>
                                         </div>
-                                        <button class="btn btn-primary btn-icon-split">
+                                        <button class="btn btn-primary btn-icon-split" onclick="submitData()">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-plus"></i></span>
                                             <span class="text">Add</span>
@@ -93,7 +98,7 @@
                                                 <th>Total Price</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="tablePurchases">
                                             <tr>
                                                 <td colspan="6" style="text-align: center;">
                                                     no items
@@ -103,27 +108,30 @@
                                     </table>
                                     <div class="card-footer">
                                         <div class="row mb-3">
-                                            <label for="totalsum" class="col-form-label col-md-2">Total Summary</label>
+                                            <label for="totalsumText" class="col-form-label col-md-2">Total
+                                                Summary</label>
                                             <div class="col-md-10 pl-0">
-                                                <input type="number" class="form-control" id="totalsum" name="totalsum"
-                                                    required placeholder="0.00" readonly>
+                                                <input type="text" class="form-control" id="totalsumText"
+                                                    name="totalsumText" required placeholder="0.00" readonly>
+                                                <input type="hidden" class="form-control" id="totalsum" name="totalsum"
+                                                    required placeholder="0.00" value=0 readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="supplier" class="col-form-label col-md-2">Supplier</label>
                                             <div class="col-md-10 pl-0">
-                                                <select name="supplier" id="supplier" class="form-control">
+                                                <select name="supplier" id="supplier" class="form-control" required>
                                                 </select>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-success btn-icon-split">
+                                        <a href="/purchases" class="btn btn-success btn-icon-split">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-plus"></i>
                                             </span>
                                             <span class="text">Finish</span>
-                                        </button>
+                                        </a>
                                         </form>
-                                        <a href="/suppliers" class="btn btn-warning btn-icon-split">
+                                        <a href="/purchases" class="btn btn-warning btn-icon-split">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-arrow-left"></i>
                                             </span>
@@ -154,10 +162,20 @@
                 order: "asc",
                 query: ''
             }
+            var readPurchaseitemsParams = {
+                page: 1,
+                totalPages: 1,
+                limit: 0,
+                sortBy: "id",
+                order: "asc",
+                query: ''
+            }
             const invoice = document.getElementById("invoice")
             const timeText = document.getElementById("timeText")
             const time = document.getElementById("time")
+            const operatorText = document.getElementById("operatorText")
             const operator = document.getElementById("operator")
+
 
             const getData = () => {
                 fetch(`http://localhost:3000/data/invoice`).then((response) => {
@@ -179,7 +197,8 @@
                     timeText.value = formattedDate
                     time.value = response.time
 
-                    operator.value = `<%= user.name %>`
+                    operator.value = `<%= user.userid %>`
+                    operatorText.value = `<%= user.name %>`
                 }).then(() => {
                     fetch(`http://localhost:3000/data/goods?${new URLSearchParams(readGoodsParams).toString()}`).then((response) => {
                         if (!response.ok) {
@@ -187,7 +206,7 @@
                         }
                         return response.json();
                     }).then((response) => {
-                        let selectOptions = ''
+                        let selectOptions = '<option value ="" disabled selected>--- Select Item ---</option>'
                         response.data.forEach((item, index) => {
                             selectOptions += `<option value ="${item.barcode}">${item.barcode} - ${item.name}</option>`
                         })
@@ -199,9 +218,9 @@
                             }
                             return response.json();
                         }).then((response) => {
-                            let selectOptions = ''
+                            let selectOptions = '<option value ="" disabled selected>--- Select Supplier ---</option>'
                             response.data.forEach((item, index) => {
-                                selectOptions += `<option value ="${item.name}">${item.name}</option>`
+                                selectOptions += `<option value ="${item.supplierid}">${item.name}</option>`
                             })
                             document.getElementById('supplier').innerHTML = selectOptions
                         })
@@ -212,6 +231,16 @@
             getData()
 
             const addPurchaseForm = document.getElementById('addPurchaseForm');
+
+            function formatCurrency(value) {
+                const formatter = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                return formatter.format(value);
+            }
 
             document.getElementById('itemcode').addEventListener('change', function (event) {
                 let barcode = document.getElementById('itemcode').value
@@ -224,15 +253,18 @@
                     document.getElementById('goodsname').value = response.data[0].name
                     document.getElementById('stock').value = response.data[0].stock
                     document.getElementById('purchaseprice').value = response.data[0].purchaseprice
+                    document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
                     document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
                 })
             })
 
             document.getElementById('purchaseprice').addEventListener('change', function (event) {
+                document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
                 document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
             })
 
             document.getElementById('quantity').addEventListener('change', function (event) {
+                document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
                 document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
             })
 
@@ -240,14 +272,99 @@
                 event.preventDefault()
             });
 
-            const submitInvoice = () => {
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" && event.target.tagName === "INPUT") {
+                    event.preventDefault(); // Prevent form submission when "Enter" is pressed
+                }
+            });
+
+            const submitInvoice = async () => {
+                console.log('Submit Invoice')
                 const formData = new FormData(addPurchaseForm);
-                fetch('http://localhost:3000/data/purchases/add', {
-                    method: 'POST',
-                    body: formData,
+                try {
+                    const response = await fetch('http://localhost:3000/data/purchases/add', {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    if (!response.ok) {
+                        throw new Error('Failed to submit invoice');
+                    }
+                    console.log('Invoice submitted successfully');
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+
+            const submitPurchase = async () => {
+                console.log('Submit Purchase')
+                const formData = new FormData(addPurchaseForm);
+                try {
+                    const response = await fetch('http://localhost:3000/data/purchaseitems/add', {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    if (!response.ok) {
+                        throw new Error('Failed to submit purchase');
+                    }
+                    console.log('Purchase submitted successfully');
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+
+            const refreshData = () => {
+                console.log("Refresh Data")
+                let invoice = document.getElementById("invoice").value
+                fetch(`http://localhost:3000/data/purchases/edit/${invoice}`).then((response) => {
+                    return response.json();
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/purchases'
+                    console.log(response.data[0])
+                    document.getElementById('totalsumText').value = formatCurrency(response.data[0].totalsum)
+                    document.getElementById('totalsum').value = response.data[0].totalsum
+                }).then(() => {
+                    readPurchaseitemsParams.query = invoice
+                    fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                        return response.json();
+                    }).then((response) => {
+                        let tablePurchases = ''
+                        response.data.forEach((item, index) => {
+                            tablePurchases += `<tr>
+                                <td>${index + 1}</td>
+                                <td>${item.itemcode}</td>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                <td>${item.purchaseprice}</td>
+                                <td>${formatCurrency(item.totalprice)}</td>
+                            </tr>`
+                        })
+                        document.getElementById('tablePurchases').innerHTML = tablePurchases
+                    })
                 })
+            }
+
+            const submitData = async () => {
+                const formData = new FormData(addPurchaseForm);
+                let invoice = document.getElementById("invoice").value;
+
+                try {
+                    // Await the fetch and convert the response to JSON
+                    const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`);
+                    const data = await response.json();
+
+                    if (data.data.length == 0) {
+                        console.log('sampai sini data length 0');
+                        await submitInvoice();   // Wait for submitInvoice to finish
+                        await submitPurchase();  // Wait for submitPurchase to finish
+                    } else {
+                        console.log('sampai sini data length != 0');
+                        await submitPurchase();  // Wait for submitPurchase to finish
+                    }
+
+                    // Refresh data regardless of condition
+                    refreshData();
+                } catch (error) {
+                    console.error('Error:', error);  // Handle any errors
+                }
             }
         </script>
     </body>
