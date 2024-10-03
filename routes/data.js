@@ -730,6 +730,20 @@ module.exports = function (db) {
         }
     })
 
+    router.delete('/purchases/delete/', (req, res) => {
+        try {
+            db.query("DELETE FROM purchases WHERE invoice = $1", [req.body.invoice], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
+        }
+    })
+
     router.get('/purchaseitems', (req, res,) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;

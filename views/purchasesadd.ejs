@@ -29,13 +29,13 @@
                                                 <div class="col-md-4">
                                                     <label for="timeText" class="col-form-label">Time</label>
                                                     <input type="text" class="form-control" id="timeText"
-                                                        name="timeText" readonly>
+                                                        name="timeText" disabled>
                                                     <input type="hidden" name="time" id="time">
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="operatorText" class="col-form-label">Operator</label>
                                                     <input type="text" class="form-control" id="operatorText"
-                                                        name="operatorText" readonly>
+                                                        name="operatorText" disabled>
                                                     <input type="hidden" class="form-control" id="operator"
                                                         name="operator" readonly>
                                                 </div>
@@ -74,7 +74,7 @@
                                                 <label for="totalpriceText" class="col-form-label">Total Price</label>
                                                 <input type="text" class="form-control" id="totalpriceText"
                                                     name="totalpriceText" style="background-color: white; opacity: 1;"
-                                                    readonly>
+                                                    disabled>
                                                 <input type="hidden" class="form-control" id="totalprice"
                                                     name="totalprice" style="background-color: white; opacity: 1;"
                                                     readonly>
@@ -112,7 +112,7 @@
                                                 Summary</label>
                                             <div class="col-md-10 pl-0">
                                                 <input type="text" class="form-control" id="totalsumText"
-                                                    name="totalsumText" required placeholder="0.00" readonly>
+                                                    name="totalsumText" required placeholder="0.00" disabled>
                                                 <input type="hidden" class="form-control" id="totalsum" name="totalsum"
                                                     required placeholder="0.00" value=0 readonly>
                                             </div>
@@ -274,7 +274,7 @@
 
             document.addEventListener("keydown", function (event) {
                 if (event.key === "Enter" && event.target.tagName === "INPUT") {
-                    event.preventDefault(); // Prevent form submission when "Enter" is pressed
+                    event.preventDefault();
                 }
             });
 
@@ -345,25 +345,32 @@
             const submitData = async () => {
                 const formData = new FormData(addPurchaseForm);
                 let invoice = document.getElementById("invoice").value;
+                console.log('sampai submitData')
+                let formComplete = true
+                if (formData.has('itemcode') && formData.has('supplier')) {
+                    formData.forEach((value, key) => {
+                        if (!value) {
+                            formComplete = false
+                        }
+                    })
+                    if (formComplete) {
+                        try {
+                            const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`);
+                            const data = await response.json();
 
-                try {
-                    // Await the fetch and convert the response to JSON
-                    const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`);
-                    const data = await response.json();
-
-                    if (data.data.length == 0) {
-                        console.log('sampai sini data length 0');
-                        await submitInvoice();   // Wait for submitInvoice to finish
-                        await submitPurchase();  // Wait for submitPurchase to finish
-                    } else {
-                        console.log('sampai sini data length != 0');
-                        await submitPurchase();  // Wait for submitPurchase to finish
+                            if (data.data.length == 0) {
+                                console.log('sampai sini data length 0');
+                                await submitInvoice();
+                                await submitPurchase();
+                            } else {
+                                console.log('sampai sini data length != 0');
+                                await submitPurchase();
+                            }
+                            refreshData();
+                        } catch (error) {
+                            console.error('Error:', error);
+                        }
                     }
-
-                    // Refresh data regardless of condition
-                    refreshData();
-                } catch (error) {
-                    console.error('Error:', error);  // Handle any errors
                 }
             }
         </script>
