@@ -366,7 +366,7 @@
                                 console.log('sampai sini data length != 0');
                                 await submitPurchase();
                             }
-                            refreshData();
+                            await refreshData();
                         } catch (error) {
                             console.error('Error:', error);
                         }

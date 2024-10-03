@@ -503,7 +503,7 @@
                             // const data = await response.json();
                             await submitInvoice();
                             await submitPurchase();
-                            refreshData();
+                            await refreshData();
                         } catch (error) {
                             console.error('Error:', error);
                         }
