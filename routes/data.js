@@ -658,7 +658,7 @@ module.exports = function (db) {
             values.push(req.query.query)
         }
 
-        let sql = 'SELECT COUNT(*) AS total FROM purchases JOIN suppliers ON purchases.supplier = suppliers.supplierid';
+        let sql = 'SELECT COUNT(*) AS total FROM purchases LEFT JOIN suppliers ON purchases.supplier = suppliers.supplierid';
         if (wheres.length > 0) {
             sql += ` WHERE ${wheres.join(' AND ')}`
         }
@@ -670,7 +670,7 @@ module.exports = function (db) {
                 }
                 const totalPages = Math.ceil(data.rows[0].total / limit)
                 const totalData = data.rows[0].total
-                sql = 'SELECT * FROM purchases JOIN suppliers ON purchases.supplier = suppliers.supplierid'
+                sql = 'SELECT * FROM purchases LEFT JOIN suppliers ON purchases.supplier = suppliers.supplierid'
                 if (wheres.length > 0) {
                     sql += ` WHERE ${wheres.join(' AND ')}`
                 }
@@ -685,7 +685,7 @@ module.exports = function (db) {
                     if (err) {
                         console.error(err);
                     }
-                    console.log(data.rows)
+                    // console.log(data.rows)
                     res.status(200).json({
                         data: data.rows,
                         totalData,
@@ -716,9 +716,9 @@ module.exports = function (db) {
 
     router.post('/purchases/add', (req, res) => {
         try {
-            const { invoice, time, operator, supplier } = req.body
+            const { invoice, time, operator } = req.body
             console.log(req.body)
-            db.query('INSERT INTO purchases (invoice, time, totalsum, supplier, operator) VALUES ($1, $2, $3, $4, $5)', [invoice, time, 0, supplier, operator], (err) => {
+            db.query('INSERT INTO purchases (invoice, time, totalsum, operator) VALUES ($1, $2, $3, $4)', [invoice, time, 0, operator], (err) => {
                 if (err) {
                     console.error(err)
                 }
@@ -827,6 +827,7 @@ module.exports = function (db) {
         }
     })
 
+
     router.delete('/purchaseitems/delete/', (req, res) => {
         try {
             db.query("DELETE FROM purchaseitems WHERE id = $1", [req.body.id], (err) => {
@@ -854,8 +855,8 @@ module.exports = function (db) {
                         s.name AS supplier_name, 
                         u.name AS user_name
                     FROM purchases p
-                    JOIN suppliers s ON p.supplier = s.supplierid
-                    JOIN "users" u ON p.operator = u.userid
+                    LEFT JOIN suppliers s ON p.supplier = s.supplierid
+                    LEFT JOIN "users" u ON p.operator = u.userid
                     WHERE invoice = $1`, [invoice], (err, data) => {
                 if (err) {
                     console.error(err)

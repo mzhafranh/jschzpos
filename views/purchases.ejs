@@ -145,7 +145,7 @@
                     <div id="overlay"></div>
 
                     <!-- Modal Structure -->
-                    <div id="supplierModal" class="modal" tabindex="-1" style="display: none;">
+                    <div id="purchasesModal" class="modal" tabindex="-1" style="display: none;">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -242,7 +242,7 @@
                                 <td>${item.invoice}</td>
                                 <td>${formattedDate}</td>
                                 <td>${item.totalsum}</td>
-                                <td>${item.name}</td>
+                                <td>${item.name ? item.name : '-'}</td>
                                 <td><a href="/purchases/edit/${item.invoice}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
                                     <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
                                     </td>
@@ -377,20 +377,20 @@
 
             const closeModalButton = document.getElementById('closeModalButton');
             const closeOptionModal = document.getElementById('closeOptionModal');
-            const supplierModal = document.getElementById('supplierModal');
+            const purchasesModal = document.getElementById('purchasesModal');
             const submitModal = document.getElementById('submitModal');
             const deleteConfirmation = document.getElementById('deleteConfirmation');
             const overlay = document.getElementById('overlay');
 
             function openDeleteModal(invoice) {
-                supplierModal.style.display = 'block'
+                purchasesModal.style.display = 'block'
                 deleteConfirmation.style.display = 'block'
                 overlay.style.display = 'block'
                 submitModal.onclick = function () { deleteSupplier(invoice); }
             }
 
             function closeModal() {
-                supplierModal.style.display = 'none';
+                purchasesModal.style.display = 'none';
                 overlay.style.display = 'none';
             }
 

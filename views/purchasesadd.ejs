@@ -64,11 +64,11 @@
                                             <div class="col-md-4">
                                                 <label for="purchaseprice" class="col-form-label">Purchase Price</label>
                                                 <input type="number" class="form-control" id="purchaseprice"
-                                                    name="purchaseprice">
+                                                    name="purchaseprice" oninput="calculateTotalPrice()">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="quantity" class="col-form-label">Qty</label>
-                                                <input type="number" class="form-control" id="quantity" name="quantity">
+                                                <input type="number" class="form-control" id="quantity" name="quantity" oninput="calculateTotalPrice()">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="totalpriceText" class="col-form-label">Total Price</label>
@@ -120,16 +120,16 @@
                                         <div class="row mb-3">
                                             <label for="supplier" class="col-form-label col-md-2">Supplier</label>
                                             <div class="col-md-10 pl-0">
-                                                <select name="supplier" id="supplier" class="form-control" required>
+                                                <select name="supplier" id="supplier" class="form-control">
                                                 </select>
                                             </div>
                                         </div>
-                                        <a href="/purchases" class="btn btn-success btn-icon-split">
+                                        <button class="btn btn-success btn-icon-split" onclick="updateSupplier()">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-plus"></i>
                                             </span>
                                             <span class="text">Finish</span>
-                                        </a>
+                                        </button>
                                         </form>
                                         <a href="/purchases" class="btn btn-warning btn-icon-split">
                                             <span class="icon text-white-50">
@@ -218,7 +218,7 @@
                             }
                             return response.json();
                         }).then((response) => {
-                            let selectOptions = '<option value ="" disabled selected>--- Select Supplier ---</option>'
+                            let selectOptions = '<option value ="" selected>--- Select Supplier ---</option>'
                             response.data.forEach((item, index) => {
                                 selectOptions += `<option value ="${item.supplierid}">${item.name}</option>`
                             })
@@ -258,15 +258,10 @@
                 })
             })
 
-            document.getElementById('purchaseprice').addEventListener('change', function (event) {
+            const calculateTotalPrice = () => {
                 document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
                 document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
-            })
-
-            document.getElementById('quantity').addEventListener('change', function (event) {
-                document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
-                document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
-            })
+            }
 
             document.getElementById('addPurchaseForm').addEventListener('submit', function (event) {
                 event.preventDefault()
@@ -342,35 +337,48 @@
                 })
             }
 
+            const updateSupplier = async () => {
+                const formData = new FormData(addPurchaseForm);
+                let invoice = document.getElementById("invoice").value;
+                if (formData.has('supplier')) {
+                    try {
+                        const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`, {
+                            method: 'PUT',
+                            body: formData,
+                        });
+                        if (!response.ok) {
+                            throw new Error('Failed to submit invoice');
+                        }
+                        console.log('Invoice submitted successfully');
+                        window.location.href = 'http://localhost:3000/purchases'
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            }
+
             const submitData = async () => {
                 const formData = new FormData(addPurchaseForm);
                 let invoice = document.getElementById("invoice").value;
                 console.log('sampai submitData')
-                let formComplete = true
-                if (formData.has('itemcode') && formData.has('supplier')) {
-                    formData.forEach((value, key) => {
-                        if (!value) {
-                            formComplete = false
-                        }
-                    })
-                    if (formComplete) {
-                        try {
-                            const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`);
-                            const data = await response.json();
+                if (formData.has('itemcode')) {
 
-                            if (data.data.length == 0) {
-                                console.log('sampai sini data length 0');
-                                await submitInvoice();
-                                await submitPurchase();
-                            } else {
-                                console.log('sampai sini data length != 0');
-                                await submitPurchase();
-                            }
-                            await refreshData();
-                        } catch (error) {
-                            console.error('Error:', error);
+                    try {
+                        const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`);
+                        const data = await response.json();
+                        if (data.data.length == 0) {
+                            console.log('sampai sini data length 0');
+                            await submitInvoice();
+                            await submitPurchase();
+                        } else {
+                            console.log('sampai sini data length != 0');
+                            await submitPurchase();
                         }
+                        await refreshData();
+                    } catch (error) {
+                        console.error('Error:', error);
                     }
+
                 }
             }
         </script>
