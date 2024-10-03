@@ -254,6 +254,11 @@ module.exports = function (db) {
         res.render('purchasesadd', { mode, user: req.session.user })
     })
 
+    router.get('/purchases/edit/:invoice', helpers.isLoggedIn, (req, res) => {
+        let invoice = req.params.invoice
+        const mode = 'purchases'
+        res.render('purchasesedit', { mode, invoice, user: req.session.user })
+    })
 
 
     router.get('/add', (req, res) => {

@@ -428,7 +428,7 @@ module.exports = function (db) {
 
     router.post('/goods/add', (req, res) => {
         try {
-            const { barcode, name, stock, purchaseprice, sellingprice, unit} = req.body
+            const { barcode, name, stock, purchaseprice, sellingprice, unit } = req.body
             // console.log(req.body)
             // console.log(req.files)
             if (!req.files || Object.keys(req.files).length === 0) {
@@ -439,7 +439,7 @@ module.exports = function (db) {
                 var filePath = path.join(__dirname, '..', 'public', 'img', 'goods', imageFilename)
                 image.mv(filePath, (err) => {
                     if (err) {
-                      return res.status(500).json({ message: "error save data" })
+                        return res.status(500).json({ message: "error save data" })
                     }
                     db.query('INSERT INTO goods VALUES ($1, $2, $3, $4, $5, $6, $7)', [barcode, name, stock, purchaseprice, sellingprice, unit, imageFilename], (err) => {
                         if (err) {
@@ -474,7 +474,7 @@ module.exports = function (db) {
 
     router.put('/goods/edit/:barcode', (req, res) => {
         try {
-            const {barcode, name, stock, purchaseprice, sellingprice, unit} = req.body
+            const { barcode, name, stock, purchaseprice, sellingprice, unit } = req.body
             console.log(req.files)
             if (!req.files || Object.keys(req.files).length === 0) {
                 console.log('sampai A')
@@ -491,7 +491,7 @@ module.exports = function (db) {
                 var filePath = path.join(__dirname, '..', 'public', 'img', 'goods', imageFilename)
                 image.mv(filePath, (err) => {
                     if (err) {
-                      return res.status(500).json({ message: "error save data" })
+                        return res.status(500).json({ message: "error save data" })
                     }
                     console.log('sampai B')
                     db.query('UPDATE goods SET name = $1, stock = $2, purchaseprice = $3, sellingprice = $4, unit = $5, picture = $6 WHERE barcode = $7', [name, stock, purchaseprice, sellingprice, unit, imageFilename, barcode], (err) => {
@@ -501,7 +501,7 @@ module.exports = function (db) {
                         res.status(200).json({ message: "ok" })
                     })
                 })
-            }                
+            }
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -702,7 +702,7 @@ module.exports = function (db) {
 
     router.get('/invoice', async (req, res,) => {
         try {
-            const currentInvoice =  await db.query('SELECT generate_invoice_number() AS invoice')
+            const currentInvoice = await db.query('SELECT generate_invoice_number() AS invoice')
             const timeNow = await db.query('SELECT get_current_time() AS time')
             console.log()
             res.json({
@@ -716,7 +716,7 @@ module.exports = function (db) {
 
     router.post('/purchases/add', (req, res) => {
         try {
-            const {invoice, time, operator, supplier} = req.body
+            const { invoice, time, operator, supplier } = req.body
             console.log(req.body)
             db.query('INSERT INTO purchases (invoice, time, totalsum, supplier, operator) VALUES ($1, $2, $3, $4, $5)', [invoice, time, 0, supplier, operator], (err) => {
                 if (err) {
@@ -775,7 +775,17 @@ module.exports = function (db) {
                 }
                 const totalPages = Math.ceil(data.rows[0].total / limit)
                 const totalData = data.rows[0].total
-                sql = 'SELECT purchaseitems.id, purchaseitems.invoice, purchaseitems.itemcode, purchaseitems.quantity, purchaseitems.purchaseprice, purchaseitems.totalprice, goods.name FROM purchaseitems JOIN goods on purchaseitems.itemcode = goods.barcode'
+                sql = `SELECT 
+                        p.id, 
+                        p.invoice, 
+                        p.itemcode, 
+                        p.quantity, 
+                        p.purchaseprice, 
+                        p.totalprice, 
+                        g.name 
+                    FROM purchaseitems p 
+                    JOIN goods g 
+                    ON p.itemcode = g.barcode`
                 if (wheres.length > 0) {
                     sql += ` WHERE ${wheres.join(' AND ')}`
                 }
@@ -802,7 +812,8 @@ module.exports = function (db) {
 
     router.post('/purchaseitems/add', (req, res) => {
         try {
-            const {invoice, itemcode, quantity, purchaseprice, totalprice} = req.body
+            const { invoice, itemcode, quantity, purchaseprice, totalprice } = req.body
+            console.log('ini di post purchaseitems')
             console.log(req.body)
             db.query('INSERT INTO purchaseitems (invoice, itemcode, quantity, purchaseprice, totalprice) VALUES ($1, $2, $3, $4, $5)', [invoice, itemcode, quantity, purchaseprice, totalprice], (err) => {
                 if (err) {
@@ -816,11 +827,36 @@ module.exports = function (db) {
         }
     })
 
+    router.delete('/purchaseitems/delete/', (req, res) => {
+        try {
+            db.query("DELETE FROM purchaseitems WHERE id = $1", [req.body.id], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
+        }
+    })
+
     router.get('/purchases/edit/:invoice', (req, res) => {
         console.log('sampai get purchase edit')
         try {
             let invoice = req.params.invoice
-            db.query('SELECT * FROM purchases WHERE invoice = $1', [invoice], (err, data) => {
+            db.query(`SELECT 
+                        p.invoice, 
+                        p.time, 
+                        p.totalsum,
+                        p.supplier,
+                        p.operator, 
+                        s.name AS supplier_name, 
+                        u.name AS user_name
+                    FROM purchases p
+                    JOIN suppliers s ON p.supplier = s.supplierid
+                    JOIN "users" u ON p.operator = u.userid
+                    WHERE invoice = $1`, [invoice], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
@@ -831,6 +867,22 @@ module.exports = function (db) {
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.put('/purchases/edit/:invoice', (req, res) => {
+        try {
+            let invoice = req.params.invoice
+            const { supplier } = req.body
+            db.query('UPDATE purchases SET supplier = $1 WHERE invoice = $2', [supplier, invoice], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({ message: "ok" })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
         }
     })
 
@@ -1196,7 +1248,7 @@ module.exports = function (db) {
         }
     })
 
-    
+
 
     router.get('/barang', (req, res,) => {
         const page = req.query.page || 1;
