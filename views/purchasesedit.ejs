@@ -144,7 +144,7 @@
                                         <div class="row mb-3">
                                             <label for="supplier" class="col-form-label col-md-2">Supplier</label>
                                             <div class="col-md-10 pl-0">
-                                                <select name="supplier" id="supplier" class="form-control" required>
+                                                <select name="supplier" id="supplier" class="form-control">
                                                 </select>
                                             </div>
                                         </div>
@@ -466,6 +466,8 @@
                     document.getElementById('totalsum').value = response.data[0].totalsum
                 }).then(() => {
                     let barcode = document.getElementById('itemcode').value
+                    console.log(barcode)
+                    if (barcode != ''){
                     fetch(`http://localhost:3000/data/goods/edit/${barcode}`).then((response) => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -506,7 +508,36 @@
                             }
                             document.getElementById('tablePurchases').innerHTML = tablePurchases
                         })
-                    })
+                    })} else {
+                        readPurchaseitemsParams.query = `<%=invoice%>`
+                        fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                            return response.json();
+                        }).then((response) => {
+                            let tablePurchases = ''
+                            console.log(response.data)
+                            if (response.data.length == 0) {
+                                tablePurchases += `<tr>
+                                                        <td colspan="7" style="text-align: center;">
+                                                        no items
+                                                        </td>
+                                                    </tr>
+                                `
+                            } else {
+                                response.data.forEach((item, index) => {
+                                    tablePurchases += `<tr>
+                                <td>${index + 1}</td>
+                                <td>${item.itemcode}</td>
+                                <td>${item.name}</td>
+                                <td>${item.quantity}</td>
+                                <td>${item.purchaseprice}</td>
+                                <td>${formatCurrency(item.totalprice)}</td>
+                                <td><button class="btn btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fa-solid fa-trash-can"></i></button></td>
+                            </tr>`
+                                })
+                            }
+                            document.getElementById('tablePurchases').innerHTML = tablePurchases
+                        })
+                    }
                 })
             }
 
@@ -515,7 +546,7 @@
                 let invoice = document.getElementById("invoice").value;
                 console.log('sampai submitData')
                 let formComplete = true
-                if (formData.has('itemcode') && formData.has('supplier')) {
+                if (formData.has('itemcode')) {
                     formData.forEach((value, key) => {
                         if (!value) {
                             console.log(value, ' is null')
