@@ -86,11 +86,12 @@
                                             <div class="col-md-4">
                                                 <label for="purchaseprice" class="col-form-label">Purchase Price</label>
                                                 <input type="number" class="form-control" id="purchaseprice"
-                                                    name="purchaseprice">
+                                                    name="purchaseprice" oninput="calculateTotalPrice()">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="quantity" class="col-form-label">Qty</label>
-                                                <input type="number" class="form-control" id="quantity" name="quantity">
+                                                <input type="number" class="form-control" id="quantity" name="quantity"
+                                                    oninput="calculateTotalPrice()">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="totalpriceText" class="col-form-label">Total Price</label>
@@ -285,7 +286,12 @@
                             }
                             return response.json();
                         }).then((response) => {
-                            let selectOptions = '<option value ="" disabled>--- Select Supplier ---</option>'
+                            let selectOptions = ''
+                            if (currentSupplierId == null) {
+                                selectOptions = '<option value ="" disabled selected>--- Select Supplier ---</option>'
+                            } else {
+                                selectOptions = '<option value ="" disabled>--- Select Supplier ---</option>'
+                            }
                             response.data.forEach((item, index) => {
                                 if (item.supplierid == currentSupplierId) {
                                     selectOptions += `<option value ="${item.supplierid}" selected>${item.name}</option>`
@@ -363,15 +369,10 @@
                 })
             })
 
-            document.getElementById('purchaseprice').addEventListener('change', function (event) {
+            const calculateTotalPrice = () => {
                 document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
                 document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
-            })
-
-            document.getElementById('quantity').addEventListener('change', function (event) {
-                document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
-                document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
-            })
+            }
 
             document.getElementById('addPurchaseForm').addEventListener('submit', function (event) {
                 event.preventDefault()
@@ -464,13 +465,35 @@
                     document.getElementById('totalsumText').value = formatCurrency(response.data[0].totalsum)
                     document.getElementById('totalsum').value = response.data[0].totalsum
                 }).then(() => {
-                    readPurchaseitemsParams.query = `<%=invoice%>`
-                    fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                    let barcode = document.getElementById('itemcode').value
+                    fetch(`http://localhost:3000/data/goods/edit/${barcode}`).then((response) => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
                         return response.json();
                     }).then((response) => {
-                        let tablePurchases = ''
-                        response.data.forEach((item, index) => {
-                            tablePurchases += `<tr>
+                        document.getElementById('goodsname').value = response.data[0].name
+                        document.getElementById('stock').value = response.data[0].stock
+                        document.getElementById('purchaseprice').value = response.data[0].purchaseprice
+                        document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
+                        document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
+                    }).then(() => {
+                        readPurchaseitemsParams.query = `<%=invoice%>`
+                        fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                            return response.json();
+                        }).then((response) => {
+                            let tablePurchases = ''
+                            console.log(response.data)
+                            if (response.data.length == 0) {
+                                tablePurchases += `<tr>
+                                                        <td colspan="7" style="text-align: center;">
+                                                        no items
+                                                        </td>
+                                                    </tr>
+                                `
+                            } else {
+                                response.data.forEach((item, index) => {
+                                    tablePurchases += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${item.itemcode}</td>
                                 <td>${item.name}</td>
@@ -479,8 +502,10 @@
                                 <td>${formatCurrency(item.totalprice)}</td>
                                 <td><button class="btn btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fa-solid fa-trash-can"></i></button></td>
                             </tr>`
+                                })
+                            }
+                            document.getElementById('tablePurchases').innerHTML = tablePurchases
                         })
-                        document.getElementById('tablePurchases').innerHTML = tablePurchases
                     })
                 })
             }

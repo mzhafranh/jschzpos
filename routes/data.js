@@ -650,6 +650,7 @@ module.exports = function (db) {
         var count = 1;
         var sortBy = req.query.sortBy == '' ? `invoice` : req.query.sortBy;
         var order = req.query.order == '' ? `asc` : req.query.order;
+        var reverseorder = order == 'asc' ? 'desc' : 'asc'
 
         console.log(req.query)
 
@@ -675,7 +676,8 @@ module.exports = function (db) {
                     sql += ` WHERE ${wheres.join(' AND ')}`
                 }
                 if (sortBy == 'invoice') {
-                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-\\d{8}-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
+                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-(\\d{8})-(\\d+)') AS DATE) ${reverseorder},
+                                      CAST(SUBSTRING(invoice FROM 'INV-\\d{8}-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
                 } else {
                     sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
                 }
