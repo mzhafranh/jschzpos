@@ -529,7 +529,7 @@ module.exports = function (db) {
         const wheres = []
         const values = []
         var count = 1;
-        var sortBy = req.query.sortBy == '' ? `supplierid` : req.query.sortBy;
+        var sortBy = req.query.sortBy == '' ? `customerid` : req.query.sortBy;
         var order = req.query.order == '' ? `asc` : req.query.order;
 
         console.log(req.query)
@@ -883,6 +883,78 @@ module.exports = function (db) {
                 }
                 res.status(200).json({ message: "ok" })
             })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.get('/customers', (req, res,) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const values = []
+        var count = 1;
+        var sortBy = req.query.sortBy == '' ? `customerid` : req.query.sortBy;
+        var order = req.query.order == '' ? `asc` : req.query.order;
+
+        console.log(req.query)
+
+        if (req.query.query) {
+            wheres.push(`name ilike '%' || $${count++} || '%' OR address ilike '%' || $${count++} || '%' OR phone ilike '%' || $${count++} || '%'`);
+            values.push(req.query.query)
+            values.push(req.query.query)
+            values.push(req.query.query)
+        }
+
+        let sql = 'SELECT COUNT(*) AS total FROM customers';
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+
+        try {
+            db.query(sql, values, (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                const totalPages = Math.ceil(data.rows[0].total / limit)
+                const totalData = data.rows[0].total
+                sql = 'SELECT * FROM customers'
+                if (wheres.length > 0) {
+                    sql += ` WHERE ${wheres.join(' AND ')}`
+                }
+                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+                console.log('SQL: ' + sql)
+                console.log([...values, limit, offset])
+                db.query(sql, [...values, limit, offset], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    res.status(200).json({
+                        data: data.rows,
+                        totalData,
+                        totalPages,
+                        limit: limit,
+                        page: parseInt(page)
+                    })
+                })
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.post('/customers/add', (req, res) => {
+        try {
+            const { name, address, phone } = req.body
+            console.log(req.body)
+            db.query('INSERT INTO customers (name, address, phone) VALUES ($1, $2, $3)', [name, address, phone], (err) => {
+                if (err) {
+                    console.error(err)
+                }
+            })
+            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
