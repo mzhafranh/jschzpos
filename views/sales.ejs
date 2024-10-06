@@ -35,12 +35,12 @@
                             <div class="container-fluid">
                                 <!-- Page Heading -->
                                 <input type="hidden" name="user" id="user" value="<%= user.name %>">
-                                <h3 class="h3 mb-0 text-gray-800">Purchases</h3>
-                                <h5 class="h5 mt-2 text-gray-600">This is data of Purchases</h5>
+                                <h3 class="h3 mb-0 text-gray-800">Sales</h3>
+                                <h5 class="h5 mt-2 text-gray-600">This is data of Sales</h5>
 
                                 <div class="card shadow mb-4">
                                     <div class="card-header">
-                                        <a href="/purchases/add" class="btn btn-primary btn-icon-split">
+                                        <a href="/sales/add" class="btn btn-primary btn-icon-split">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-plus"></i></span>
                                             <span class="text">Add</span>
@@ -94,11 +94,23 @@
                                                                         aria-label="Total Summary: activate to sort column ascending"
                                                                         style="width: 162px;">Total Summary
                                                                     </th>
-                                                                    <th id="supplierThead" class="sorting" tabindex="0"
+                                                                    <th id="payThead" class="sorting" tabindex="0"
                                                                         aria-controls="dataTable" rowspan="1"
                                                                         colspan="1"
-                                                                        aria-label="Supplier: activate to sort column ascending"
-                                                                        style="width: 162px;">Supplier
+                                                                        aria-label="Pay: activate to sort column ascending"
+                                                                        style="width: 162px;">Pay
+                                                                    </th>
+                                                                    <th id="changeThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Change: activate to sort column ascending"
+                                                                        style="width: 162px;">Change
+                                                                    </th>
+                                                                    <th id="customerThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Customer: activate to sort column ascending"
+                                                                        style="width: 162px;">Customer
                                                                     </th>
                                                                     <th style="width: 162px;">
                                                                         Action
@@ -110,7 +122,9 @@
                                                                     <th rowspan="1" colspan="1">Invoice</th>
                                                                     <th rowspan="1" colspan="1">Time</th>
                                                                     <th rowspan="1" colspan="1">Total Summary</th>
-                                                                    <th rowspan="1" colspan="1">Supplier</th>
+                                                                    <th rowspan="1" colspan="1">Pay</th>
+                                                                    <th rowspan="1" colspan="1">Change</th>
+                                                                    <th rowspan="1" colspan="1">Customer</th>
                                                                     <th rowspan="1" colspan="1">Action</th>
                                                                 </tr>
                                                             </tfoot>
@@ -145,7 +159,7 @@
                     <div id="overlay"></div>
 
                     <!-- Modal Structure -->
-                    <div id="purchasesModal" class="modal" tabindex="-1" style="display: none;">
+                    <div id="salesModal" class="modal" tabindex="-1" style="display: none;">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -191,7 +205,7 @@
             }
 
             const readData = (params) => {
-                fetch(`http://localhost:3000/data/purchases?${new URLSearchParams(params).toString()}`).then((response) => {
+                fetch(`http://localhost:3000/data/sales?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -203,7 +217,9 @@
                         let invoiceThead = document.getElementById('invoiceThead')
                         let timeThead = document.getElementById('timeThead')
                         let totalsumThead = document.getElementById('totalsumThead')
-                        let supplierThead = document.getElementById('supplierThead')
+                        let payThead = document.getElementById('payThead')
+                        let changeThead = document.getElementById('changeThead')
+                        let customerThead = document.getElementById('customerThead')
 
                         if (params.sortBy == "invoice" && params.order == "asc") {
                             invoiceThead.className = 'sorting sorting_asc'
@@ -229,9 +245,25 @@
                             totalsumThead.className = 'sorting'
                         }
 
-                        if (params.sortBy == "supplier" && params.order == "asc") {
+                        if (params.sortBy == "pay" && params.order == "asc") {
                             totalsumThead.className = 'sorting sorting_asc'
-                        } else if (params.sortBy == "supplier" && params.order == "desc") {
+                        } else if (params.sortBy == "pay" && params.order == "desc") {
+                            totalsumThead.className = 'sorting sorting_desc'
+                        } else {
+                            totalsumThead.className = 'sorting'
+                        }
+
+                        if (params.sortBy == "change" && params.order == "asc") {
+                            totalsumThead.className = 'sorting sorting_asc'
+                        } else if (params.sortBy == "change" && params.order == "desc") {
+                            totalsumThead.className = 'sorting sorting_desc'
+                        } else {
+                            totalsumThead.className = 'sorting'
+                        }
+
+                        if (params.sortBy == "customer" && params.order == "asc") {
+                            totalsumThead.className = 'sorting sorting_asc'
+                        } else if (params.sortBy == "customer" && params.order == "desc") {
                             totalsumThead.className = 'sorting sorting_desc'
                         } else {
                             totalsumThead.className = 'sorting'
@@ -252,8 +284,10 @@
                                 <td>${item.invoice}</td>
                                 <td>${formattedDate}</td>
                                 <td>${formatCurrency(item.totalsum)}</td>
+                                <td>${formatCurrency(item.pay)}</td>
+                                <td>${formatCurrency(item.change)}</td>
                                 <td>${item.name ? item.name : '-'}</td>
-                                <td><a href="/purchases/edit/${item.invoice}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
+                                <td><a href="/sales/edit/${item.invoice}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
                                     <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
                                     </td>
                             </tr>
@@ -326,10 +360,12 @@
                 readData(readParams)
             })
 
-            const invoiceThead = document.getElementById("invoiceThead")
-            const timeThead = document.getElementById("timeThead")
-            const totalsumThead = document.getElementById("totalsumThead")
-            const supplierThead = document.getElementById("supplierThead")
+            const invoiceThead = document.getElementById('invoiceThead')
+            const timeThead = document.getElementById('timeThead')
+            const totalsumThead = document.getElementById('totalsumThead')
+            const payThead = document.getElementById('payThead')
+            const changeThead = document.getElementById('changeThead')
+            const customerThead = document.getElementById('customerThead')
 
 
             invoiceThead.onclick = function () {
@@ -368,9 +404,33 @@
                 readData(readParams)
             }
 
-            supplierThead.onclick = function () {
-                if (readParams.sortBy != 'supplier') {
-                    readParams.sortBy = 'supplier'
+            payThead.onclick = function () {
+                if (readParams.sortBy != 'pay') {
+                    readParams.sortBy = 'pay'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            changeThead.onclick = function () {
+                if (readParams.sortBy != 'change') {
+                    readParams.sortBy = 'change'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            customerThead.onclick = function () {
+                if (readParams.sortBy != 'customer') {
+                    readParams.sortBy = 'customer'
                     readParams.order = 'asc'
                 } else if (readParams.order == 'asc') {
                     readParams.order = 'desc'
@@ -382,20 +442,20 @@
 
             const closeModalButton = document.getElementById('closeModalButton');
             const closeOptionModal = document.getElementById('closeOptionModal');
-            const purchasesModal = document.getElementById('purchasesModal');
+            const salesModal = document.getElementById('salesModal');
             const submitModal = document.getElementById('submitModal');
             const deleteConfirmation = document.getElementById('deleteConfirmation');
             const overlay = document.getElementById('overlay');
 
             function openDeleteModal(invoice) {
-                purchasesModal.style.display = 'block'
+                salesModal.style.display = 'block'
                 deleteConfirmation.style.display = 'block'
                 overlay.style.display = 'block'
                 submitModal.onclick = function () { deleteSupplier(invoice); }
             }
 
             function closeModal() {
-                purchasesModal.style.display = 'none';
+                salesModal.style.display = 'none';
                 overlay.style.display = 'none';
             }
 
@@ -408,7 +468,7 @@
             }
 
             const deleteSupplier = (invoice) => {
-                fetch(`http://localhost:3000/data/purchases/delete/`, {
+                fetch(`http://localhost:3000/data/sales/delete/`, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json',
@@ -427,7 +487,6 @@
                     readData(readParams)
                 });
             }
-
         </script>
 
     </body>
