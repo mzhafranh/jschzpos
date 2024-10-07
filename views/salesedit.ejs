@@ -441,25 +441,6 @@
                 }
             }
 
-            const deletePurchase = (id) => {
-                fetch(`http://localhost:3000/data/saleitems/delete/`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id })
-                }).then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                }).then((response) => {
-                    closeModal()
-                    refreshData()
-                });
-            }
-
             const refreshData = () => {
                 console.log("Refresh Data")
                 // let invoice = document.getElementById("invoice").value
@@ -469,6 +450,8 @@
                     console.log(response.data[0])
                     document.getElementById('totalsumText').value = formatCurrency(response.data[0].totalsum)
                     document.getElementById('totalsum').value = response.data[0].totalsum
+                    document.getElementById('changeText').value = formatCurrency(document.getElementById('pay').value - response.data[0].totalsum)
+                    document.getElementById('change').value = document.getElementById('pay').value - response.data[0].totalsum
                 }).then(() => {
                     let barcode = document.getElementById('itemcode').value
                     if (barcode != '') {
@@ -546,6 +529,25 @@
                         })
                     }
                 })
+            }
+
+            const deletePurchase = (id) => {
+                fetch(`http://localhost:3000/data/saleitems/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id })
+                }).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                }).then((response) => {
+                    closeModal()
+                    refreshData()
+                });
             }
 
             function sleep(ms) {
