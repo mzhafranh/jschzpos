@@ -276,6 +276,21 @@ module.exports = function (db) {
         res.render('customersedit', { mode, customerId, user: req.session.user })
     })
 
+    router.get('/sales', helpers.isLoggedIn, (req, res) => {
+        const mode = 'sales'
+        res.render('sales', { mode, user: req.session.user })
+    })
+
+    router.get('/sales/add', helpers.isLoggedIn, (req, res) => {
+        const mode = 'sales'
+        res.render('salesadd', { mode, user: req.session.user })
+    })
+
+    router.get('/sales/edit/:invoice', helpers.isLoggedIn, (req, res) => {
+        let invoice = req.params.invoice
+        const mode = 'sales'
+        res.render('salesedit', { mode, invoice, user: req.session.user })
+    })
 
     router.get('/add', (req, res) => {
         res.render('add')

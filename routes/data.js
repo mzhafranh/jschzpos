@@ -716,6 +716,20 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/invoicesales', async (req, res,) => {
+        try {
+            const currentInvoice = await db.query('SELECT generate_invoice_number_sales() AS invoice')
+            const timeNow = await db.query('SELECT get_current_time() AS time')
+            console.log()
+            res.json({
+                invoice: currentInvoice.rows[0].invoice,
+                time: timeNow.rows[0].time
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
     router.post('/purchases/add', (req, res) => {
         try {
             const { invoice, time, operator } = req.body
