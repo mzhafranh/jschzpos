@@ -369,6 +369,8 @@
                     } catch (error) {
                         console.error(error);
                     }
+                } else {
+                    window.location.href = 'http://localhost:3000/purchases'
                 }
             }
 
@@ -393,7 +395,7 @@
                             console.log('sampai sini data length != 0');
                             await submitPurchase();
                         }
-                        // await sleep(500);
+                        // await sleep(300);
                         await refreshData();
                     } catch (error) {
                         console.error('Error:', error);

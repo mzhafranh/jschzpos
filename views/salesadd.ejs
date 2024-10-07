@@ -124,7 +124,7 @@
                                         </thead>
                                         <tbody id="tableSales">
                                             <tr>
-                                                <td colspan="6" style="text-align: center;">
+                                                <td colspan="7" style="text-align: center;">
                                                     no items
                                                 </td>
                                             </tr>
@@ -144,8 +144,8 @@
                                         <div class="row mb-3">
                                             <label for="pay" class="col-form-label col-md-2">Pay</label>
                                             <div class="col-md-10 pl-0">
-                                                <input type="number" class="form-control" id="pay" name="pay" required
-                                                    placeholder="0.00" oninput="calculateChange()">
+                                                <input type="number" class="form-control" id="pay" name="pay"
+                                                    placeholder="0.00" oninput="calculateChange()" value= 0>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
@@ -286,7 +286,7 @@
                         }).then((response) => {
                             let selectOptions = '<option value ="" selected>--- Select Customer ---</option>'
                             response.data.forEach((item, index) => {
-                                selectOptions += `<option value ="${item.supplierid}">${item.name}</option>`
+                                selectOptions += `<option value ="${item.customerid}">${item.name}</option>`
                             })
                             document.getElementById('customer').innerHTML = selectOptions
                         })
@@ -331,7 +331,7 @@
 
             const calculateChange = () => {
                 document.getElementById('changeText').value = formatCurrency(document.getElementById('pay').value - document.getElementById('totalsum').value)
-                document.getElementById('totalprice').value = document.getElementById('pay').value - document.getElementById('totalsum').value
+                document.getElementById('change').value = document.getElementById('pay').value - document.getElementById('totalsum').value
             }
 
             document.getElementById('addSalesForm').addEventListener('submit', function (event) {
@@ -361,7 +361,7 @@
                 }
             }
 
-            const submitPurchase = async () => {
+            const submitSale = async () => {
                 console.log('Submit Purchase')
                 const formData = new FormData(addSalesForm);
                 try {
@@ -412,7 +412,7 @@
                                 <td>${item.itemcode}</td>
                                 <td>${item.name}</td>
                                 <td>${item.quantity}</td>
-                                <td>${formatCurrency(item.purchaseprice)}</td>
+                                <td>${formatCurrency(item.sellingprice)}</td>
                                 <td>${formatCurrency(item.totalprice)}</td>
                                 <td><button class="btn btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fa-solid fa-trash-can"></i></button></td>
                             </tr>`
@@ -440,6 +440,8 @@
                     } catch (error) {
                         console.error(error);
                     }
+                } else {
+                    window.location.href = 'http://localhost:3000/sales'
                 }
             }
 
@@ -455,16 +457,15 @@
                         if (data.data.length == 0) {
                             console.log('sampai sini data length 0');
                             await submitInvoice();
-                            await submitPurchase();
+                            await submitSale();
                         } else {
                             console.log('sampai sini data length != 0');
-                            await submitPurchase();
+                            await submitSale();
                         }
                         await refreshData();
                     } catch (error) {
                         console.error('Error:', error);
                     }
-
                 }
             }
         </script>

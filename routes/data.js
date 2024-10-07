@@ -813,7 +813,6 @@ module.exports = function (db) {
                 db.query(sql, [...values, limit, offset], (err, data) => {
                     if (err) {
                         console.error(err);
-                        return res.status(500).json({ message: 'Error fetching data' });
                     }
                     res.status(200).json({
                         data: data.rows,
@@ -1025,6 +1024,244 @@ module.exports = function (db) {
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error delete data" })
+        }
+    })
+
+    router.get('/sales', (req, res,) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const values = []
+        var count = 1;
+        var sortBy = req.query.sortBy == '' ? `invoice` : req.query.sortBy;
+        var order = req.query.order == '' ? `asc` : req.query.order;
+        var reverseorder = order == 'asc' ? 'desc' : 'asc'
+
+        console.log(req.query)
+
+        if (req.query.query) {
+            wheres.push(`invoice ilike '%' || $${count++} || '%'`);
+            values.push(req.query.query)
+        }
+
+        let sql = 'SELECT COUNT(*) AS total FROM sales LEFT JOIN customers ON sales.customer = customers.customerid';
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+
+        try {
+            db.query(sql, values, (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                const totalPages = Math.ceil(data.rows[0].total / limit)
+                const totalData = data.rows[0].total
+                sql = 'SELECT * FROM sales LEFT JOIN customers ON sales.customer = customers.customerid'
+                if (wheres.length > 0) {
+                    sql += ` WHERE ${wheres.join(' AND ')}`
+                }
+                if (sortBy == 'invoice') {
+                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-PENJ(\\d{8})-(\\d+)') AS DATE) ${reverseorder},
+                                      CAST(SUBSTRING(invoice FROM 'INV-PENJ(\\d{8})-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
+                } else {
+                    sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+                }
+                console.log('SQL: ' + sql)
+                console.log([...values, limit, offset])
+                db.query(sql, [...values, limit, offset], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    // console.log(data.rows)
+                    res.status(200).json({
+                        data: data.rows,
+                        totalData,
+                        totalPages,
+                        limit: limit,
+                        page: parseInt(page)
+                    })
+                })
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.post('/sales/add', (req, res) => {
+        try {
+            const { invoice, time, pay, change, customer, operator } = req.body
+            console.log(req.body)
+            db.query('INSERT INTO sales (invoice, time, totalsum, pay, change, customer, operator) VALUES ($1, $2, $3, $4, $5, $6, $7)', [invoice, time, 0, pay, change, customer, operator], (err) => {
+                if (err) {
+                    console.error(err)
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+    router.delete('/sales/delete/', (req, res) => {
+        console.log('sampai delete invoice ', req.body.invoice)
+        try {
+            db.query("DELETE FROM sales WHERE invoice = $1", [req.body.invoice], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
+        }
+    })
+
+    router.get('/saleitems', (req, res,) => {
+        console.log('sampai /saleitems')
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const values = []
+        var count = 1;
+        var sortBy = req.query.sortBy == '' ? `id` : req.query.sortBy;
+        var order = req.query.order == '' ? `asc` : req.query.order;
+
+        console.log(req.query)
+
+        if (req.query.query) {
+            wheres.push(`invoice = $${count++}`);
+            values.push(req.query.query)
+        }
+
+        let sql = 'SELECT COUNT(*) AS total FROM saleitems JOIN goods on saleitems.itemcode = goods.barcode';
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+
+        console.log('SQL saleitems: ' + sql)
+
+        try {
+            db.query(sql, values, (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                const totalPages = Math.ceil(data.rows[0].total / limit)
+                const totalData = data.rows[0].total
+                sql = `SELECT 
+                        s.id, 
+                        s.invoice, 
+                        s.itemcode, 
+                        s.quantity, 
+                        s.sellingprice, 
+                        s.totalprice, 
+                        g.name 
+                    FROM saleitems s 
+                    JOIN goods g 
+                    ON s.itemcode = g.barcode`
+                if (wheres.length > 0) {
+                    sql += ` WHERE ${wheres.join(' AND ')}`
+                }
+                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+                console.log('SQL: ' + sql)
+                console.log([...values, limit, offset])
+                db.query(sql, [...values, limit, offset], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    res.status(200).json({
+                        data: data.rows,
+                        totalData,
+                        totalPages,
+                        limit: limit,
+                        page: parseInt(page)
+                    })
+                })
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.post('/saleitems/add', (req, res) => {
+        try {
+            const { invoice, itemcode, quantity, sellingprice, totalprice } = req.body
+            console.log('ini di post saleitems')
+            console.log(req.body)
+            db.query('INSERT INTO saleitems (invoice, itemcode, quantity, sellingprice, totalprice) VALUES ($1, $2, $3, $4, $5)', [invoice, itemcode, quantity, sellingprice, totalprice], (err) => {
+                if (err) {
+                    console.error(err)
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
+
+    router.delete('/saleitems/delete/', (req, res) => {
+        try {
+            db.query("DELETE FROM saleitems WHERE id = $1", [req.body.id], (err) => {
+                if (err) {
+                    console.error(err);
+                }
+            })
+            res.status(200).json({ message: "ok" })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error delete data" })
+        }
+    })
+
+    router.get('/sales/edit/:invoice', (req, res) => {
+        console.log('sampai get sales edit')
+        try {
+            let invoice = req.params.invoice
+            db.query(`SELECT 
+                        s.invoice, 
+                        s.time, 
+                        s.totalsum,
+                        s.pay,
+                        s.change,
+                        s.operator, 
+                        c.name AS customer_name, 
+                        u.name AS user_name
+                    FROM sales s
+                    LEFT JOIN customers c ON s.customer = c.customerid
+                    LEFT JOIN "users" u ON s.operator = u.userid
+                    WHERE invoice = $1`, [invoice], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({
+                    data: data.rows
+                })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.put('/sales/edit/:invoice', (req, res) => {
+        console.log('sampai put /sales/edit/:invoice')
+        try {
+            let invoice = req.params.invoice
+            const { pay, change, customer } = req.body
+            db.query('UPDATE sales SET pay = $1, change = $2, customer = $3 WHERE invoice = $4', [pay, change, customer, invoice], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({ message: "ok" })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
         }
     })
 

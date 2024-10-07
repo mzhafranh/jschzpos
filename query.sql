@@ -68,7 +68,7 @@ CREATE TABLE sales (
 );
 CREATE TABLE saleitems (
     id SERIAL PRIMARY KEY,
-    invoice VARCHAR(20) REFERENCES sales(invoice),
+    invoice VARCHAR(20) REFERENCES sales(invoice) ON DELETE CASCADE,
     itemcode VARCHAR(20) REFERENCES goods(barcode), 
     quantity INTEGER,
     sellingprice NUMERIC(19, 2),
@@ -89,7 +89,7 @@ EXECUTE FUNCTION set_invoice_number();
 
 CREATE OR REPLACE FUNCTION set_invoice_number_sales() RETURNS TRIGGER AS $$
 BEGIN
-    NEW.invoice := generate_invoice_number();
+    NEW.invoice := generate_invoice_number_sales();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -235,10 +235,43 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION manage_totalsum_sales()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        UPDATE sales
+        SET totalsum = totalsum + NEW.totalprice
+        WHERE invoice = NEW.invoice;
+
+    ELSIF (TG_OP = 'DELETE') THEN
+        UPDATE sales
+        SET totalsum = totalsum - OLD.totalprice
+        WHERE invoice = OLD.invoice;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        UPDATE sales
+        SET totalsum = (
+            SELECT SUM(totalprice)
+            FROM purchaseitems
+            WHERE invoice = NEW.invoice
+        )
+        WHERE invoice = NEW.invoice;
+    END IF;
+
+    RETURN NEW;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER trigger_manage_totalsum
 AFTER INSERT OR UPDATE OR DELETE ON purchaseitems
 FOR EACH ROW
 EXECUTE FUNCTION manage_totalsum();
+
+CREATE TRIGGER trigger_manage_totalsum_sales
+AFTER INSERT OR UPDATE OR DELETE ON saleitems
+FOR EACH ROW
+EXECUTE FUNCTION manage_totalsum_sales();
 
 CREATE OR REPLACE FUNCTION manage_goods_stock()
 RETURNS TRIGGER AS $$
@@ -259,7 +292,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION manage_goods_stock_sales()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        UPDATE goods
+        SET stock = stock - NEW.quantity
+        WHERE barcode = NEW.itemcode;
+
+    ELSIF (TG_OP = 'DELETE') THEN
+        UPDATE goods
+        SET stock = stock + OLD.quantity
+        WHERE barcode = OLD.itemcode;
+    END IF;
+
+    RETURN NEW;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER trigger_manage_goods_stock
 AFTER INSERT OR DELETE ON purchaseitems
 FOR EACH ROW
 EXECUTE FUNCTION manage_goods_stock();
+
+CREATE TRIGGER trigger_manage_goods_stock_sales
+AFTER INSERT OR DELETE ON saleitems
+FOR EACH ROW
+EXECUTE FUNCTION manage_goods_stock_sales();

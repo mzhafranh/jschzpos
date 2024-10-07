@@ -451,7 +451,7 @@
                 salesModal.style.display = 'block'
                 deleteConfirmation.style.display = 'block'
                 overlay.style.display = 'block'
-                submitModal.onclick = function () { deleteSupplier(invoice); }
+                submitModal.onclick = function () { deleteSale(invoice); }
             }
 
             function closeModal() {
@@ -467,7 +467,7 @@
                 closeModal()
             }
 
-            const deleteSupplier = (invoice) => {
+            const deleteSale = (invoice) => {
                 fetch(`http://localhost:3000/data/sales/delete/`, {
                     method: 'DELETE',
                     headers: {
