@@ -467,6 +467,10 @@
                 closeModal()
             }
 
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
             const deleteSale = (invoice) => {
                 fetch(`http://localhost:3000/data/sales/delete/`, {
                     method: 'DELETE',
@@ -480,10 +484,11 @@
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     return response.json();
-                }).then((response) => {
+                }).then( async (response) => {
                     closeModal()
                     readParams.sortBy = 'invoice'
                     readParams.order = 'asc'
+                    await sleep(200)
                     readData(readParams)
                 });
             }

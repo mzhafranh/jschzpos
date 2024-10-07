@@ -34,14 +34,14 @@
                             <!-- Begin Page Content -->
                             <div class="container-fluid">
                                 <!-- Page Heading -->
-                                <h3 class="h3 mb-2 text-gray-800">Purchases</h3>
+                                <h3 class="h3 mb-2 text-gray-800">Sales</h3>
 
                                 <div class="card shadow mb-4">
                                     <div class="card-header">
                                         <h1 class="h1 m-0 text-gray-600">Transaction</h1>
                                     </div>
                                     <div class="card-body">
-                                        <form id="addPurchaseForm">
+                                        <form id="addSalesForm">
                                             <div class="row mb-3">
                                                 <div class="col-md-4">
                                                     <label for="invoice" class="col-form-label">Invoice</label>
@@ -84,9 +84,9 @@
                                         </div>
                                         <div class="row mb-3">
                                             <div class="col-md-4">
-                                                <label for="purchaseprice" class="col-form-label">Purchase Price</label>
-                                                <input type="number" class="form-control" id="purchaseprice"
-                                                    name="purchaseprice" oninput="calculateTotalPrice()">
+                                                <label for="sellingprice" class="col-form-label">Purchase Price</label>
+                                                <input type="number" class="form-control" id="sellingprice"
+                                                    name="sellingprice" oninput="calculateTotalPrice()">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="quantity" class="col-form-label">Qty</label>
@@ -122,9 +122,9 @@
                                                 <th></th>
                                             </tr>
                                         </thead>
-                                        <tbody id="tablePurchases">
+                                        <tbody id="tableSales">
                                             <tr>
-                                                <td colspan="6" style="text-align: center;">
+                                                <td colspan="7" style="text-align: center;">
                                                     no items
                                                 </td>
                                             </tr>
@@ -142,9 +142,25 @@
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label for="supplier" class="col-form-label col-md-2">Supplier</label>
+                                            <label for="pay" class="col-form-label col-md-2">Pay</label>
                                             <div class="col-md-10 pl-0">
-                                                <select name="supplier" id="supplier" class="form-control">
+                                                <input type="number" class="form-control" id="pay" name="pay"
+                                                    placeholder="0.00" oninput="calculateChange()" value=0>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="changeText" class="col-form-label col-md-2">Change</label>
+                                            <div class="col-md-10 pl-0">
+                                                <input type="text" class="form-control" id="changeText"
+                                                    name="changeText" required placeholder="0.00" disabled>
+                                                <input type="hidden" class="form-control" id="change" name="change"
+                                                    required placeholder="0.00" value=0 readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label for="customer" class="col-form-label col-md-2">Customer</label>
+                                            <div class="col-md-10 pl-0">
+                                                <select name="customer" id="customer" class="form-control" required>
                                                 </select>
                                             </div>
                                         </div>
@@ -155,7 +171,7 @@
                                             <span class="text">Finish</span>
                                         </button>
                                         </form>
-                                        <a href="/purchases" class="btn btn-warning btn-icon-split">
+                                        <a href="/sales" class="btn btn-warning btn-icon-split">
                                             <span class="icon text-white-50">
                                                 <i class="fa-solid fa-arrow-left"></i>
                                             </span>
@@ -204,15 +220,15 @@
                 order: "asc",
                 query: ''
             }
-            var readSuppliersParams = {
+            var readCustomersParams = {
                 page: 1,
                 totalPages: 1,
                 limit: 0,
-                sortBy: "supplierid",
+                sortBy: "customerid",
                 order: "asc",
                 query: ''
             }
-            var readPurchaseitemsParams = {
+            var readSaleitemsParams = {
                 page: 1,
                 totalPages: 1,
                 limit: 0,
@@ -225,10 +241,9 @@
             const time = document.getElementById("time")
             const operatorText = document.getElementById("operatorText")
             const operator = document.getElementById("operator")
-            var currentSupplierId = ''
+            var currentCustomerId = ''
 
-
-            const addPurchaseForm = document.getElementById('addPurchaseForm');
+            const addSalesForm = document.getElementById('addSalesForm');
 
             function formatCurrency(value) {
                 const formatter = new Intl.NumberFormat('id-ID', {
@@ -241,7 +256,7 @@
             }
 
             const getData = () => {
-                fetch(`http://localhost:3000/data/purchases/edit/<%=invoice%>`).then((response) => {
+                fetch(`http://localhost:3000/data/sales/edit/<%=invoice%>`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -249,6 +264,9 @@
                 }).then((response) => {
                     document.getElementById('totalsumText').value = formatCurrency(response.data[0].totalsum)
                     document.getElementById('totalsum').value = response.data[0].totalsum
+                    document.getElementById('pay').value = response.data[0].pay
+                    document.getElementById('changeText').value = formatCurrency(response.data[0].change)
+                    document.getElementById('change').value = response.data[0].change
 
                     invoice.value = response.data[0].invoice
 
@@ -265,7 +283,7 @@
 
                     operator.value = response.data[0].operator
                     operatorText.value = `${response.data[0].user_name}`
-                    currentSupplierId = response.data[0].supplier
+                    currentCustomerId = response.data[0].customer
 
                 }).then(() => {
                     fetch(`http://localhost:3000/data/goods?${new URLSearchParams(readGoodsParams).toString()}`).then((response) => {
@@ -280,44 +298,39 @@
                         })
                         document.getElementById('itemcode').innerHTML = selectOptions
                     }).then(() => {
-                        fetch(`http://localhost:3000/data/suppliers?${new URLSearchParams(readSuppliersParams).toString()}`).then((response) => {
+                        fetch(`http://localhost:3000/data/customers?${new URLSearchParams(readCustomersParams).toString()}`).then((response) => {
                             if (!response.ok) {
                                 throw new Error(`HTTP error! Status: ${response.status}`);
                             }
                             return response.json();
                         }).then((response) => {
-                            let selectOptions = ''
-                            if (currentSupplierId == null) {
-                                selectOptions = '<option value ="" disabled selected>--- Select Supplier ---</option>'
-                            } else {
-                                selectOptions = '<option value ="" disabled>--- Select Supplier ---</option>'
-                            }
+                            let selectOptions = '<option value ="" disabled>--- Select Customer ---</option>'
                             response.data.forEach((item, index) => {
-                                if (item.supplierid == currentSupplierId) {
-                                    selectOptions += `<option value ="${item.supplierid}" selected>${item.name}</option>`
+                                if (currentCustomerId == item.customerid) {
+                                    selectOptions += `<option value ="${item.customerid}" selected>${item.name}</option>`
                                 } else {
-                                    selectOptions += `<option value ="${item.supplierid}">${item.name}</option>`
+                                    selectOptions += `<option value ="${item.customerid}">${item.name}</option>`
                                 }
                             })
-                            document.getElementById('supplier').innerHTML = selectOptions
+                            document.getElementById('customer').innerHTML = selectOptions
                         }).then(() => {
-                            readPurchaseitemsParams.query = '<%= invoice %>'
-                            fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                            readSaleitemsParams.query = '<%= invoice %>'
+                            fetch(`http://localhost:3000/data/saleitems?${new URLSearchParams(readSaleitemsParams).toString()}`).then((response) => {
                                 return response.json();
                             }).then((response) => {
-                                let tablePurchases = ''
+                                let tableSales = ''
                                 response.data.forEach((item, index) => {
-                                    tablePurchases += `<tr>
+                                    tableSales += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${item.itemcode}</td>
                                 <td>${item.name}</td>
                                 <td>${item.quantity}</td>
-                                <td>${item.purchaseprice}</td>
+                                <td>${formatCurrency(item.sellingprice)}</td>
                                 <td>${formatCurrency(item.totalprice)}</td>
                                 <td><button class="btn btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fa-solid fa-trash-can"></i></button></td>
                             </tr>`
                                 })
-                                document.getElementById('tablePurchases').innerHTML = tablePurchases
+                                document.getElementById('tableSales').innerHTML = tableSales
                             })
                         })
                     })
@@ -363,18 +376,23 @@
                 }).then((response) => {
                     document.getElementById('goodsname').value = response.data[0].name
                     document.getElementById('stock').value = response.data[0].stock
-                    document.getElementById('purchaseprice').value = response.data[0].purchaseprice
-                    document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
-                    document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
+                    document.getElementById('sellingprice').value = response.data[0].sellingprice
+                    document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('sellingprice').value)
+                    document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('sellingprice').value
                 })
             })
 
             const calculateTotalPrice = () => {
-                document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
-                document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
+                document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('sellingprice').value)
+                document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('sellingprice').value
             }
 
-            document.getElementById('addPurchaseForm').addEventListener('submit', function (event) {
+            const calculateChange = () => {
+                document.getElementById('changeText').value = formatCurrency(document.getElementById('pay').value - document.getElementById('totalsum').value)
+                document.getElementById('change').value = document.getElementById('pay').value - document.getElementById('totalsum').value
+            }
+
+            document.getElementById('addSalesForm').addEventListener('submit', function (event) {
                 event.preventDefault()
             });
 
@@ -385,11 +403,11 @@
             });
 
             const finishEdit = async () => {
-                console.log('Submit Invoice')
-                const formData = new FormData(addPurchaseForm);
-                if (formData.has('supplier') && formData.get('supplier') != '') {
+                const formData = new FormData(addSalesForm);
+                let invoice = document.getElementById("invoice").value;
+                if (formData.has('customer')) {
                     try {
-                        const response = await fetch('http://localhost:3000/data/purchases/edit/<%=invoice%>', {
+                        const response = await fetch(`http://localhost:3000/data/sales/edit/${invoice}`, {
                             method: 'PUT',
                             body: formData,
                         });
@@ -397,20 +415,20 @@
                             throw new Error('Failed to submit invoice');
                         }
                         console.log('Invoice submitted successfully');
-                        window.location.href = 'http://localhost:3000/purchases'
+                        window.location.href = 'http://localhost:3000/sales'
                     } catch (error) {
                         console.error(error);
                     }
                 } else {
-                    window.location.href = 'http://localhost:3000/purchases'
+                    window.location.href = 'http://localhost:3000/sales'
                 }
             }
 
             const submitInvoice = async () => {
                 console.log('Submit Invoice')
-                const formData = new FormData(addPurchaseForm);
+                const formData = new FormData(addSalesForm);
                 try {
-                    const response = await fetch('http://localhost:3000/data/purchases/edit/<%=invoice%>', {
+                    const response = await fetch('http://localhost:3000/data/sales/edit/<%=invoice%>', {
                         method: 'PUT',
                         body: formData,
                     });
@@ -423,25 +441,8 @@
                 }
             }
 
-            const submitPurchase = async () => {
-                console.log('Submit Purchase')
-                const formData = new FormData(addPurchaseForm);
-                try {
-                    const response = await fetch('http://localhost:3000/data/purchaseitems/add', {
-                        method: 'POST',
-                        body: formData,
-                    });
-                    if (!response.ok) {
-                        throw new Error('Failed to submit purchase');
-                    }
-                    console.log('Purchase submitted successfully');
-                } catch (error) {
-                    console.error(error);
-                }
-            }
-
             const deletePurchase = (id) => {
-                fetch(`http://localhost:3000/data/purchaseitems/delete/`, {
+                fetch(`http://localhost:3000/data/saleitems/delete/`, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json',
@@ -462,7 +463,7 @@
             const refreshData = () => {
                 console.log("Refresh Data")
                 // let invoice = document.getElementById("invoice").value
-                fetch(`http://localhost:3000/data/purchases/edit/<%=invoice%>`).then((response) => {
+                fetch(`http://localhost:3000/data/sales/edit/<%=invoice%>`).then((response) => {
                     return response.json();
                 }).then((response) => {
                     console.log(response.data[0])
@@ -470,7 +471,6 @@
                     document.getElementById('totalsum').value = response.data[0].totalsum
                 }).then(() => {
                     let barcode = document.getElementById('itemcode').value
-                    // console.log(barcode)
                     if (barcode != '') {
                         fetch(`http://localhost:3000/data/goods/edit/${barcode}`).then((response) => {
                             if (!response.ok) {
@@ -480,17 +480,17 @@
                         }).then((response) => {
                             document.getElementById('goodsname').value = response.data[0].name
                             document.getElementById('stock').value = response.data[0].stock
-                            document.getElementById('purchaseprice').value = response.data[0].purchaseprice
-                            document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
-                            document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
+                            document.getElementById('sellingprice').value = response.data[0].sellingprice
+                            document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('sellingprice').value)
+                            document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('sellingprice').value
                         }).then(() => {
-                            readPurchaseitemsParams.query = `<%=invoice%>`
-                            fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                            readSaleitemsParams.query = `<%=invoice%>`
+                            fetch(`http://localhost:3000/data/saleitems?${new URLSearchParams(readSaleitemsParams).toString()}`).then((response) => {
                                 return response.json();
                             }).then((response) => {
-                                console.log('Data purchase items:')
+                                console.log('Data sale items:')
                                 console.log(response.data)
-                                let tablePurchases = ''
+                                let tableSales = ''
                                 if (response.data.length == 0) {
                                     tablePurchases += `<tr>
                                                         <td colspan="7" style="text-align: center;">
@@ -500,27 +500,28 @@
                                 `
                                 } else {
                                     response.data.forEach((item, index) => {
-                                        tablePurchases += `<tr>
+                                        tableSales += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${item.itemcode}</td>
                                 <td>${item.name}</td>
                                 <td>${item.quantity}</td>
-                                <td>${item.purchaseprice}</td>
+                                <td>${formatCurrency(item.sellingprice)}</td>
                                 <td>${formatCurrency(item.totalprice)}</td>
                                 <td><button class="btn btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fa-solid fa-trash-can"></i></button></td>
                             </tr>`
                                     })
                                 }
-                                document.getElementById('tablePurchases').innerHTML = tablePurchases
+                                document.getElementById('tableSales').innerHTML = tableSales
                             })
                         })
                     } else {
-                        readPurchaseitemsParams.query = `<%=invoice%>`
-                        fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                        readSaleitemsParams.query = `<%=invoice%>`
+                        fetch(`http://localhost:3000/data/saleitems?${new URLSearchParams(readSaleitemsParams).toString()}`).then((response) => {
                             return response.json();
                         }).then((response) => {
-                            let tablePurchases = ''
+                            console.log('Data sale items:')
                             console.log(response.data)
+                            let tableSales = ''
                             if (response.data.length == 0) {
                                 tablePurchases += `<tr>
                                                         <td colspan="7" style="text-align: center;">
@@ -530,18 +531,18 @@
                                 `
                             } else {
                                 response.data.forEach((item, index) => {
-                                    tablePurchases += `<tr>
+                                    tableSales += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${item.itemcode}</td>
                                 <td>${item.name}</td>
                                 <td>${item.quantity}</td>
-                                <td>${item.purchaseprice}</td>
+                                <td>${formatCurrency(item.sellingprice)}</td>
                                 <td>${formatCurrency(item.totalprice)}</td>
                                 <td><button class="btn btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fa-solid fa-trash-can"></i></button></td>
                             </tr>`
                                 })
                             }
-                            document.getElementById('tablePurchases').innerHTML = tablePurchases
+                            document.getElementById('tableSales').innerHTML = tableSales
                         })
                     }
                 })
@@ -552,7 +553,7 @@
             }
 
             const submitData = async () => {
-                const formData = new FormData(addPurchaseForm);
+                const formData = new FormData(addSalesForm);
                 let invoice = document.getElementById("invoice").value;
                 console.log('sampai submitData')
                 let formComplete = true
@@ -565,10 +566,10 @@
                     })
                     if (formComplete) {
                         try {
-                            // const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`);
+                            // const response = await fetch(`http://localhost:3000/data/sales/edit/${invoice}`);
                             // const data = await response.json();
                             await submitInvoice();
-                            await submitPurchase();
+                            await submitSale();
                             await sleep(200);
                             await refreshData();
                         } catch (error) {
