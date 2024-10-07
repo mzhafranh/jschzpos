@@ -355,7 +355,7 @@
             const updateSupplier = async () => {
                 const formData = new FormData(addPurchaseForm);
                 let invoice = document.getElementById("invoice").value;
-                if (formData.has('supplier')) {
+                if (formData.has('supplier') && formData.get('supplier') != '') {
                     try {
                         const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`, {
                             method: 'PUT',
@@ -370,6 +370,10 @@
                         console.error(error);
                     }
                 }
+            }
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
             }
 
             const submitData = async () => {
@@ -389,6 +393,7 @@
                             console.log('sampai sini data length != 0');
                             await submitPurchase();
                         }
+                        // await sleep(500);
                         await refreshData();
                     } catch (error) {
                         console.error('Error:', error);

@@ -387,19 +387,24 @@
             const finishEdit = async () => {
                 console.log('Submit Invoice')
                 const formData = new FormData(addPurchaseForm);
-                try {
-                    const response = await fetch('http://localhost:3000/data/purchases/edit/<%=invoice%>', {
-                        method: 'PUT',
-                        body: formData,
-                    });
-                    if (!response.ok) {
-                        throw new Error('Failed to submit invoice');
+                if (formData.has('supplier') && formData.get('supplier') != '') {
+                    try {
+                        const response = await fetch('http://localhost:3000/data/purchases/edit/<%=invoice%>', {
+                            method: 'PUT',
+                            body: formData,
+                        });
+                        if (!response.ok) {
+                            throw new Error('Failed to submit invoice');
+                        }
+                        console.log('Invoice submitted successfully');
+                        window.location.href = 'http://localhost:3000/purchases'
+                    } catch (error) {
+                        console.error(error);
                     }
-                    console.log('Invoice submitted successfully');
+                } else {
                     window.location.href = 'http://localhost:3000/purchases'
-                } catch (error) {
-                    console.error(error);
                 }
+
             }
 
             const submitInvoice = async () => {
@@ -467,35 +472,35 @@
                 }).then(() => {
                     let barcode = document.getElementById('itemcode').value
                     console.log(barcode)
-                    if (barcode != ''){
-                    fetch(`http://localhost:3000/data/goods/edit/${barcode}`).then((response) => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.json();
-                    }).then((response) => {
-                        document.getElementById('goodsname').value = response.data[0].name
-                        document.getElementById('stock').value = response.data[0].stock
-                        document.getElementById('purchaseprice').value = response.data[0].purchaseprice
-                        document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
-                        document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
-                    }).then(() => {
-                        readPurchaseitemsParams.query = `<%=invoice%>`
-                        fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                    if (barcode != '') {
+                        fetch(`http://localhost:3000/data/goods/edit/${barcode}`).then((response) => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
                             return response.json();
                         }).then((response) => {
-                            let tablePurchases = ''
-                            console.log(response.data)
-                            if (response.data.length == 0) {
-                                tablePurchases += `<tr>
+                            document.getElementById('goodsname').value = response.data[0].name
+                            document.getElementById('stock').value = response.data[0].stock
+                            document.getElementById('purchaseprice').value = response.data[0].purchaseprice
+                            document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
+                            document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
+                        }).then(() => {
+                            readPurchaseitemsParams.query = `<%=invoice%>`
+                            fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                                return response.json();
+                            }).then((response) => {
+                                let tablePurchases = ''
+                                console.log(response.data)
+                                if (response.data.length == 0) {
+                                    tablePurchases += `<tr>
                                                         <td colspan="7" style="text-align: center;">
                                                         no items
                                                         </td>
                                                     </tr>
                                 `
-                            } else {
-                                response.data.forEach((item, index) => {
-                                    tablePurchases += `<tr>
+                                } else {
+                                    response.data.forEach((item, index) => {
+                                        tablePurchases += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${item.itemcode}</td>
                                 <td>${item.name}</td>
@@ -504,11 +509,12 @@
                                 <td>${formatCurrency(item.totalprice)}</td>
                                 <td><button class="btn btn-danger" onclick="openDeleteModal('${item.id}')"><i class="fa-solid fa-trash-can"></i></button></td>
                             </tr>`
-                                })
-                            }
-                            document.getElementById('tablePurchases').innerHTML = tablePurchases
+                                    })
+                                }
+                                document.getElementById('tablePurchases').innerHTML = tablePurchases
+                            })
                         })
-                    })} else {
+                    } else {
                         readPurchaseitemsParams.query = `<%=invoice%>`
                         fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
                             return response.json();

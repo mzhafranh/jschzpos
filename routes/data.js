@@ -747,6 +747,7 @@ module.exports = function (db) {
     })
 
     router.delete('/purchases/delete/', (req, res) => {
+        console.log('sampai delete invoice ', req.body.invoice)
         try {
             db.query("DELETE FROM purchases WHERE invoice = $1", [req.body.invoice], (err) => {
                 if (err) {
@@ -761,6 +762,7 @@ module.exports = function (db) {
     })
 
     router.get('/purchaseitems', (req, res,) => {
+        console.log('sampai /purchaseitems')
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
@@ -811,6 +813,7 @@ module.exports = function (db) {
                 db.query(sql, [...values, limit, offset], (err, data) => {
                     if (err) {
                         console.error(err);
+                        return res.status(500).json({ message: 'Error fetching data' });
                     }
                     res.status(200).json({
                         data: data.rows,
@@ -888,6 +891,9 @@ module.exports = function (db) {
     })
 
     router.put('/purchases/edit/:invoice', (req, res) => {
+        console.log('sampai put /purchases/edit/:invoice')
+        console.log(req.params.invoice)
+        console.log(req.body)
         try {
             let invoice = req.params.invoice
             const { supplier } = req.body
