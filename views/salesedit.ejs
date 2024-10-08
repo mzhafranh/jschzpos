@@ -549,11 +549,7 @@
                     refreshData()
                 });
             }
-
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-
+            
             const submitData = async () => {
                 const formData = new FormData(addSalesForm);
                 let invoice = document.getElementById("invoice").value;
@@ -572,7 +568,6 @@
                             // const data = await response.json();
                             await submitInvoice();
                             await submitSale();
-                            await sleep(200);
                             await refreshData();
                         } catch (error) {
                             console.error('Error:', error);

@@ -374,10 +374,6 @@
                 }
             }
 
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-
             const submitData = async () => {
                 const formData = new FormData(addPurchaseForm);
                 let invoice = document.getElementById("invoice").value;
@@ -395,7 +391,6 @@
                             console.log('sampai sini data length != 0');
                             await submitPurchase();
                         }
-                        await sleep(200);
                         await refreshData();
                     } catch (error) {
                         console.error('Error:', error);

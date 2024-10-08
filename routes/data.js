@@ -275,12 +275,12 @@ module.exports = function (db) {
 
             bcrypt.hash(password, saltRounds, function (err, hash) {
                 if (err) return res.send(err)
-                db.query('INSERT INTO users (email, name, password, role) VALUES ($1, $2, $3, $4)', [email, name, hash, role], (err) => {
+                db.query('INSERT INTO users (email, name, password, role) VALUES ($1, $2, $3, $4) RETURNING *', [email, name, hash, role], (err, data) => {
                     if (err) {
                         console.error(err)
                     }
+                    res.status(200).json({ data: data.rows })
                 })
-                res.status(200).json({ message: "ok" })
             });
         } catch (err) {
             console.log(err)
@@ -397,12 +397,12 @@ module.exports = function (db) {
         try {
             const { unit, name, note } = req.body
             console.log(req.body)
-            db.query('INSERT INTO units VALUES ($1, $2, $3)', [unit, name, note], (err) => {
+            db.query('INSERT INTO units VALUES ($1, $2, $3) RETURNING *', [unit, name, note], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
+                res.status(200).json({ data: data.rows })
             })
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -526,14 +526,14 @@ module.exports = function (db) {
                     if (err) {
                         return res.status(500).json({ message: "error save data" })
                     }
-                    db.query('INSERT INTO goods VALUES ($1, $2, $3, $4, $5, $6, $7)', [barcode, name, stock, purchaseprice, sellingprice, unit, imageFilename], (err) => {
+                    db.query('INSERT INTO goods VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [barcode, name, stock, purchaseprice, sellingprice, unit, imageFilename], (err, data) => {
                         if (err) {
                             console.error(err)
                         }
+                        res.status(200).json({ data: data.rows })
                     })
                 })
             }
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -667,12 +667,12 @@ module.exports = function (db) {
         try {
             const { name, address, phone } = req.body
             console.log(req.body)
-            db.query('INSERT INTO suppliers (name, address, phone) VALUES ($1, $2, $3)', [name, address, phone], (err) => {
+            db.query('INSERT INTO suppliers (name, address, phone) VALUES ($1, $2, $3) RETURNING *', [name, address, phone], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
+                res.status(200).json({ data: data.rows })
             })
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -819,12 +819,12 @@ module.exports = function (db) {
         try {
             const { invoice, time, operator } = req.body
             console.log(req.body)
-            db.query('INSERT INTO purchases (invoice, time, totalsum, operator) VALUES ($1, $2, $3, $4)', [invoice, time, 0, operator], (err) => {
+            db.query('INSERT INTO purchases (invoice, time, totalsum, operator) VALUES ($1, $2, $3, $4) RETURNING *', [invoice, time, 0, operator], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
+                res.status(200).json({ data: data.rows })
             })
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -918,12 +918,13 @@ module.exports = function (db) {
             const { invoice, itemcode, quantity, purchaseprice, totalprice } = req.body
             console.log('ini di post purchaseitems')
             console.log(req.body)
-            db.query('INSERT INTO purchaseitems (invoice, itemcode, quantity, purchaseprice, totalprice) VALUES ($1, $2, $3, $4, $5)', [invoice, itemcode, quantity, purchaseprice, totalprice], (err) => {
+            db.query('INSERT INTO purchaseitems (invoice, itemcode, quantity, purchaseprice, totalprice) VALUES ($1, $2, $3, $4, $5) RETURNING *', [invoice, itemcode, quantity, purchaseprice, totalprice], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
+                res.status(200).json({ data: data.rows })
+
             })
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -1053,12 +1054,12 @@ module.exports = function (db) {
         try {
             const { name, address, phone } = req.body
             console.log(req.body)
-            db.query('INSERT INTO customers (name, address, phone) VALUES ($1, $2, $3)', [name, address, phone], (err) => {
+            db.query('INSERT INTO customers (name, address, phone) VALUES ($1, $2, $3) RETURNING *', [name, address, phone], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
+                res.status(200).json({ data: data.rows })
             })
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -1177,12 +1178,12 @@ module.exports = function (db) {
         try {
             const { invoice, time, pay, change, customer, operator } = req.body
             console.log(req.body)
-            db.query('INSERT INTO sales (invoice, time, totalsum, pay, change, customer, operator) VALUES ($1, $2, $3, $4, $5, $6, $7)', [invoice, time, 0, pay, change, customer, operator], (err) => {
+            db.query('INSERT INTO sales (invoice, time, totalsum, pay, change, customer, operator) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [invoice, time, 0, pay, change, customer, operator], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
+                res.status(200).json({ data: data.rows })
             })
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
@@ -1276,12 +1277,12 @@ module.exports = function (db) {
             const { invoice, itemcode, quantity, sellingprice, totalprice } = req.body
             console.log('ini di post saleitems')
             console.log(req.body)
-            db.query('INSERT INTO saleitems (invoice, itemcode, quantity, sellingprice, totalprice) VALUES ($1, $2, $3, $4, $5)', [invoice, itemcode, quantity, sellingprice, totalprice], (err) => {
+            db.query('INSERT INTO saleitems (invoice, itemcode, quantity, sellingprice, totalprice) VALUES ($1, $2, $3, $4, $5) RETURNING *', [invoice, itemcode, quantity, sellingprice, totalprice], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
+                res.status(200).json({ data: data.rows })
             })
-            res.status(200).json({ message: "ok" })
         } catch (err) {
             console.log(err)
             res.status(500).json({ message: "error save data" })
