@@ -75,30 +75,6 @@ CREATE TABLE saleitems (
     totalprice NUMERIC(19, 2)
 );
 
-CREATE OR REPLACE FUNCTION set_invoice_number() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.invoice := generate_invoice_number();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_set_invoice_number
-BEFORE INSERT ON purchases
-FOR EACH ROW
-EXECUTE FUNCTION set_invoice_number();
-
-CREATE OR REPLACE FUNCTION set_invoice_number_sales() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.invoice := generate_invoice_number_sales();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_set_invoice_number_sales
-BEFORE INSERT ON sales
-FOR EACH ROW
-EXECUTE FUNCTION set_invoice_number_sales();
-
 CREATE OR REPLACE FUNCTION generate_invoice_number() RETURNS VARCHAR AS $$
 DECLARE
     current_date DATE := CURRENT_DATE;  -- Get the current date
@@ -144,6 +120,30 @@ BEGIN
     RETURN invoice_number;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION set_invoice_number() RETURNS TRIGGER AS $$
+BEGIN
+    NEW.invoice := generate_invoice_number();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_set_invoice_number
+BEFORE INSERT ON purchases
+FOR EACH ROW
+EXECUTE FUNCTION set_invoice_number();
+
+CREATE OR REPLACE FUNCTION set_invoice_number_sales() RETURNS TRIGGER AS $$
+BEGIN
+    NEW.invoice := generate_invoice_number_sales();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_set_invoice_number_sales
+BEFORE INSERT ON sales
+FOR EACH ROW
+EXECUTE FUNCTION set_invoice_number_sales();
 
 CREATE OR REPLACE FUNCTION update_daily_invoice_sequence() RETURNS TRIGGER AS $$
 DECLARE

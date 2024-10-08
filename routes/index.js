@@ -42,89 +42,6 @@ module.exports = function (db) {
         const mode = 'dashboard'
         res.render('index', { mode, user: req.session.user })
         
-        // const url = req.url == '/' ? '/?page=1' : req.url;
-        // const page = req.query.page || 1;
-        // const limit = 5;
-        // const offset = (page - 1) * limit;
-        // const wheres = []
-        // const values = []
-        // const filter = `&idCheck=${req.query.idCheck}&id=${req.query.id}&stringCheck=${req.query.stringCheck}&string=${req.query.string}&integerCheck=${req.query.integerCheck}&integer=${req.query.integer}&floatCheck=${req.query.floatCheck}&float=${req.query.float}&dateCheck=${req.query.dateCheck}&startDate=${req.query.startDate}&endDate=${req.query.endDate}&booleanCheck=${req.query.booleanCheck}&boolean=${req.query.boolean}`
-        // var count = 1;
-        // var sortBy = req.query.sortBy == undefined ? `id` : req.query.sortBy;
-        // var order = req.query.order == undefined ? `asc` : req.query.order;
-
-
-        // console.log(req.query)
-        // console.log(filter)
-
-        // if (req.query.id && req.query.idCheck == 'on') {
-        //     wheres.push(`id = $${count++}`);
-        //     values.push(req.query.id);
-        // }
-
-        // if (req.query.string && req.query.stringCheck == 'on') {
-        //     wheres.push(`string ilike '%' || $${count++} || '%'`);
-        //     values.push(req.query.string);
-        // }
-
-        // if (req.query.integer && req.query.integerCheck == 'on') {
-        //     wheres.push(`integer = $${count++}`);
-        //     values.push(req.query.integer);
-        // }
-
-        // if (req.query.float && req.query.floatCheck == 'on') {
-        //     wheres.push(`float = $${count++}`);
-        //     values.push(req.query.float);
-        // }
-
-        // if (req.query.dateCheck == 'on') {
-        //     if (req.query.startDate != '' && req.query.endDate != '') {
-        //         wheres.push(`date BETWEEN $${count++} AND $${count++}`)
-        //         values.push(req.query.startDate);
-        //         values.push(req.query.endDate);
-        //     }
-        //     else if (req.query.startDate) {
-        //         wheres.push(`date > $${count++}`)
-        //         values.push(req.query.startDate);
-        //     }
-        //     else if (req.query.endDate) {
-        //         wheres.push(`date < $${count++}`)
-        //         values.push(req.query.endDate);
-        //     }
-        // }
-
-        // if (req.query.boolean && req.query.booleanCheck == 'on') {
-        //     wheres.push(`boolean = $${count++}`);
-        //     values.push(req.query.boolean);
-        // }
-
-
-        // let sql = 'SELECT COUNT(*) AS total FROM data';
-        // if (wheres.length > 0) {
-        //     sql += ` WHERE ${wheres.join(' AND ')}`
-        // }
-
-        // console.log(sql)
-
-        // db.query(sql, values, (err, data) => {
-        //     if (err) {
-        //         console.error(err);
-        //     }
-        //     const pages = Math.ceil(data.rows[0].total / limit)
-        //     sql = 'SELECT * FROM data'
-        //     if (wheres.length > 0) {
-        //         sql += ` WHERE ${wheres.join(' AND ')}`
-        //     }
-        //     sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
-        //     console.log(sql)
-        //     console.log([...values, limit, offset])
-        //     db.query(sql, [...values, limit, offset], (err, data) => {
-        //         if (err) {
-        //             console.error(err);
-        //         }
-        //         res.render('index', { rows: data.rows, pages, page, filter, query: req.query, sortBy, order, mode})
-        //     })
-        // })
     })
 
     router.get('/register', (req, res) => {
@@ -399,6 +316,13 @@ module.exports = function (db) {
             res.redirect('inventory')
         })
 
+        
+    })
+
+    router.get('/test', helpers.isLoggedIn, function (req, res, next) {
+
+        const mode = ''
+        res.render('test', { mode, user: req.session.user })
         
     })
 

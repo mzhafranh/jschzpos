@@ -1,109 +1,440 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include('partials/header')%>
 
-<head>
+    <head>
+        <style>
+            /* Dark overlay for background when modal is open */
+            #overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                /* Semi-transparent black */
+                z-index: 1050;
+                display: none;
+            }
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+            /* Modal should be above the dark overlay */
+            #formModal {
+                z-index: 1060;
+            }
+        </style>
+    </head>
 
-    <title>Z-POS - Login</title>
+    <body id="page-top">
+        <!-- Page Wrapper -->
+        <div id="wrapper">
+            <%- include('partials/sidebar menu')%>
+                <!-- Content Wrapper -->
+                <div id="content-wrapper" class="d-flex flex-column">
+                    <!-- Main Content -->
+                    <div id="content">
+                        <%- include('partials/topbar menu')%>
+                            <!-- Begin Page Content -->
+                            <div class="container-fluid">
+                                <!-- Page Heading -->
+                                <input type="hidden" name="user" id="user" value="<%= user.name %>">
+                                <h3 class="h3 mb-0 text-gray-800">Users</h3>
+                                <h5 class="h5 mt-2 text-gray-600">This is data of users</h5>
 
-    <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
-
-    <style>
-        /* Ensure the card container takes full screen height */
-        .card-container {
-            height: 100vh; /* 100% of viewport height */
-        }
-    </style>
-
-</head>
-
-<body class="bg-gradient-primary">
-
-    <div class="container d-flex justify-content-center align-items-center card-container">
-
-        <!-- Outer Row -->
-        <div class="row justify-content-center" style="width: 100%;">
-
-            <div class="col-xl-10 col-lg-12 col-md-9">
-
-                <div class="card o-hidden border-0 shadow-lg my-5">
-                    <div class="card-body p-0">
-                        <!-- Nested Row within Card Body -->
-                        <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block bg-login-image"><img src="/img/rcamp.png" alt="rubicamp logo" style="width: 100%; height: 510px;"></div>
-                            <div class="col-lg-6">
-                                <div class="p-5">
-                                    <div class="text-center">
-                                        <h1 class="h1 text-gray-900">Point of Sales</h1>
-                                        <hr>
-                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                <div class="card shadow mb-4">
+                                    <div class="card-header">
+                                        <a href="/users/add" class="btn btn-primary btn-icon-split">
+                                            <span class="icon text-white-50">
+                                                <i class="fa-solid fa-plus"></i></span>
+                                            <span class="text">Add</span>
+                                        </a>
                                     </div>
-                                    <form class="user">
-                                        <div class="form-group">
-                                            <input type="email" class="form-control form-control-user"
-                                                id="email" name="email" aria-describedby="emailHelp"
-                                                placeholder="Enter Email Address...">
-                                        </div>
-                                        <div class="form-group">
-                                            <input type="password" class="form-control form-control-user"
-                                                id="password" name="password" placeholder="Password">
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="custom-control custom-checkbox small">
-                                                <input type="checkbox" class="custom-control-input" id="customCheck">
-                                                <label class="custom-control-label" for="customCheck">Remember
-                                                    Me</label>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <div id="dataTable_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                                                <div class="row">
+                                                    <div class="col-sm-12">
+                                                        <table class="table table-bordered dataTable" id="dataTable"
+                                                            width="100%" cellspacing="0" role="grid"
+                                                            aria-describedby="dataTable_info" style="width: 100%;">
+                                                            <thead>
+                                                                <tr role="row">
+                                                                    <th id="useridThead" class="sorting sorting_asc"
+                                                                        tabindex="0" aria-controls="dataTable"
+                                                                        rowspan="1" colspan="1"
+                                                                        aria-label="User ID: activate to sort column descending"
+                                                                        style="width: 100px;" aria-sort="ascending">User
+                                                                        ID
+                                                                    </th>
+                                                                    <th id="emailThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Email: activate to sort column ascending"
+                                                                        style="width: 100px;">Email
+                                                                    </th>
+                                                                    <th id="nameThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Name: activate to sort column ascending"
+                                                                        style="width: 100px;">Name
+                                                                    </th>
+                                                                    <th id="roleThead" class="sorting" tabindex="0"
+                                                                        aria-controls="dataTable" rowspan="1"
+                                                                        colspan="1"
+                                                                        aria-label="Role: activate to sort column ascending"
+                                                                        style="width: 100px;">Role
+                                                                    </th>
+                                                                    <th style="width: 80px;">
+                                                                        Action
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tfoot>
+                                                                <tr>
+                                                                    <th rowspan="1" colspan="1">User ID</th>
+                                                                    <th rowspan="1" colspan="1">Email</th>
+                                                                    <th rowspan="1" colspan="1">Name</th>
+                                                                    <th rowspan="1" colspan="1">Role</th>
+                                                                    <th rowspan="1" colspan="1">Action</th>
+                                                                </tr>
+                                                            </tfoot>
+                                                            <tbody>
+
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <a href="index.html" class="btn btn-primary btn-user btn-block">
-                                            Login
-                                        </a>
-                                        <hr>
-                                    </form>
-                                    <div class="text-center">
-                                        <a class="small" href="forgot-password.html">Forgot Password?</a>
                                     </div>
-                                    
+                                </div>
+                            </div>
+                    </div>
+
+                    <!-- Dark overlay -->
+                    <div id="overlay"></div>
+
+                    <!-- Modal Structure -->
+                    <div id="formUserModal" class="modal" tabindex="-1" style="display: none;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Delete Confirmation</h5>
+                                    <button type="button" class="btn" id="closeUserModal"><i
+                                            class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <div id="deleteConfirmation" style="display:none;">
+                                        <p class="mb-0">Are you sure, you want to delete it?</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" id="closeOptionUserModal">Close</button>
+                                    <button class="btn btn-primary" id="submitUser">Save changes</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <%- include('partials/footer')%>
                 </div>
-
-            </div>
-
         </div>
 
-        <% if(info.length > 0) {%>
-            <div class="alert alert-danger mt-3" role="alert">
-              <%= info %>
-            </div>
-            <% } %>
+        <script>
+            var readParams = {
+                page: 1,
+                totalPages: 1,
+                limit: 0,
+                sortBy: "userid",
+                order: "asc",
+                query: ''
+            }
 
-    </div>
+            // const readData = (params) => {
+            //     fetch(`http://localhost:3000/data/users?${new URLSearchParams(params).toString()}`).then((response) => {
+            //         if (!response.ok) {
+            //             throw new Error(`HTTP error! Status: ${response.status}`);
+            //         }
+            //         return response.json();
+            //     })
+            //         .then((response) => {
+            //             let newParams = { ...params };
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+            //             let useridThead = document.getElementById('useridThead')
+            //             let emailThead = document.getElementById('emailThead')
+            //             let nameThead = document.getElementById('nameThead')
+            //             let roleThead = document.getElementById('roleThead')
 
-    <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+            //             if (params.sortBy == "userid" && params.order == "asc") {
+            //                 useridThead.className = 'sorting sorting_asc'
+            //             } else if (params.sortBy == "userid" && params.order == "desc") {
+            //                 useridThead.className = 'sorting sorting_desc'
+            //             } else {
+            //                 useridThead.className = 'sorting'
+            //             }
 
-    <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+            //             if (params.sortBy == "email" && params.order == "asc") {
+            //                 emailThead.className = 'sorting sorting_asc'
+            //             } else if (params.sortBy == "email" && params.order == "desc") {
+            //                 emailThead.className = 'sorting sorting_desc'
+            //             } else {
+            //                 emailThead.className = 'sorting'
+            //             }
 
-</body>
+            //             if (params.sortBy == "name" && params.order == "asc") {
+            //                 nameThead.className = 'sorting sorting_asc'
+            //             } else if (params.sortBy == "name" && params.order == "desc") {
+            //                 nameThead.className = 'sorting sorting_desc'
+            //             } else {
+            //                 nameThead.className = 'sorting'
+            //             }
 
-</html>
+            //             if (params.sortBy == "role" && params.order == "asc") {
+            //                 roleThead.className = 'sorting sorting_asc'
+            //             } else if (params.sortBy == "role" && params.order == "desc") {
+            //                 roleThead.className = 'sorting sorting_desc'
+            //             } else {
+            //                 roleThead.className = 'sorting'
+            //             }
+
+            //             let htmlTbody = '';
+            //             response.data.forEach((item, index) => {
+            //                 if (document.getElementById('user').value == item.name) {
+            //                     htmlTbody += `
+            //                 <tr>
+            //                     <td>${item.userid}</td>
+            //                     <td>${item.email}</td>
+            //                     <td>${item.name}</td>
+            //                     <td>${item.role}</td>
+            //                     <td></td>
+            //                 </tr>
+            //                 `
+            //                 } else {
+            //                     htmlTbody += `
+            //                 <tr>
+            //                     <td>${item.userid}</td>
+            //                     <td>${item.email}</td>
+            //                     <td>${item.name}</td>
+            //                     <td>${item.role}</td>
+            //                     <td><a href="/users/edit/${item.userid}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
+            //                         <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.email}')"><i class="fa-solid fa-trash-can"></i></button>
+            //                         </td>
+            //                 </tr>
+            //                 `
+            //                 }
+            //             })
+            //             document.querySelector('table tbody').innerHTML = htmlTbody
+
+            //             let startingIndex = (response.page - 1) * response.limit
+
+            //             let showEntryText = ''
+            //             if (response.totalData == 0) {
+            //                 showEntryText += `Showing 0 to 0 of 0 entries`
+            //             } else if (response.page * response.limit > response.totalData || response.limit == 0) {
+            //                 showEntryText += `Showing ${startingIndex + 1} to ${response.totalData} of ${response.totalData}`
+            //             } else {
+            //                 showEntryText += `Showing ${startingIndex + 1} to ${response.page * response.limit} of ${response.totalData}`
+            //             }
+            //             document.getElementById('dataTable_info').innerText = showEntryText
+
+            //             let paging = '';
+
+            //             if (!(params.page == 1)) {
+            //                 newParams.page = params.page - 1;
+            //                 paging += `<li class="paginate_button page-item previous enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Previous</span></button></li>`
+            //             } else {
+            //                 paging += `<li class="paginate_button page-item previous disabled"><span class="text-gray-600 page-link" aria-hidden="true">Previous</span></li>`
+            //             }
+
+            //             newParams.page = 1;
+            //             for (let i = 1; i <= response.totalPages; i++) {
+            //                 if (response.page == i) {
+            //                     newParams.page = i;
+            //                     paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+            //                 }
+            //                 else {
+            //                     newParams.page = i;
+            //                     paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+            //                 }
+            //             }
+
+            //             if (!(params.page == response.totalPages)) {
+            //                 newParams.page = params.page + 1
+            //                 paging += `<li class="paginate_button page-item next enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Next</span></button></li>`
+            //             } else {
+            //                 paging += `<li class="paginate_button page-item next disabled"><span class="text-gray-600 page-link" aria-hidden="true">Next</span></li>`
+
+            //             }
+            //             document.querySelector('.pagination').innerHTML = paging
+            //         })
+            //         .catch((err) => {
+            //             console.error(err);
+            //         });
+            // }
+
+            const readData = (params) => {
+                fetch(`http://localhost:3000/data/users?${new URLSearchParams(params).toString()}`).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                    .then((response) => {
+                        let htmlTbody = '';
+                        response.data.forEach((item, index) => {
+                            htmlTbody += `
+                            <tr>
+                                <td>${item.userid}</td>
+                                <td>${item.email}</td>
+                                <td>${item.name}</td>
+                                <td>${item.role}</td>
+                                <td><a href="/users/edit/${item.userid}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
+                                    <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.email}')"><i class="fa-solid fa-trash-can"></i></button>
+                                    </td>
+                            </tr>
+                            `
+                        }
+                        )
+                        document.querySelector('table tbody').innerHTML = htmlTbody
+                    })
+            }
+
+            readData(readParams)
+
+            $(document).ready(function () {
+                $('#dataTable').DataTable({
+                    // Optional settings for sorting and paging
+                    "ordering": true,
+                    "paging": true,
+                    "searching": true
+                });
+            });
+
+            const resetForm = () => {
+                // document.getElementById('idObj').value = ''
+                // document.getElementById("form-search").reset();
+            }
+
+            // document.getElementById('dataTable_length').addEventListener('change', function () {
+            // const selectElement = document.getElementById('dataTable_length')
+            // readParams.limit = parseInt(selectElement.value)
+            // console.log(readParams)
+            // readData(readParams)
+            // });
+
+            // document.getElementById('search-input').addEventListener('change', function () {
+            // const searchInput = document.getElementById('search-input')
+            // const selectElement = document.getElementById('dataTable_length')
+            // readParams.limit = parseInt(selectElement.value)
+            // readParams.query = searchInput.value
+            // console.log(readParams.query)
+            // readData(readParams)
+            // })
+
+            // const useridThead = document.getElementById("useridThead")
+            // const emailThead = document.getElementById("emailThead")
+            // const nameThead = document.getElementById("nameThead")
+            // const roleThead = document.getElementById("roleThead")
+
+            // useridThead.onclick = function () {
+            // if (readParams.sortBy != 'userid') {
+            // readParams.sortBy = 'userid'
+            // readParams.order = 'asc'
+            // } else if (readParams.order == 'asc') {
+            // readParams.order = 'desc'
+            // } else {
+            // readParams.order = 'asc'
+            // }
+            // readData(readParams)
+            // }
+
+            // emailThead.onclick = function () {
+            // if (readParams.sortBy != 'email') {
+            // readParams.sortBy = 'email'
+            // readParams.order = 'asc'
+            // } else if (readParams.order == 'asc') {
+            // readParams.order = 'desc'
+            // } else {
+            // readParams.order = 'asc'
+            // }
+            // readData(readParams)
+            // }
+            // nameThead.onclick = function () {
+            // if (readParams.sortBy != 'name') {
+            // readParams.sortBy = 'name'
+            // readParams.order = 'asc'
+            // } else if (readParams.order == 'asc') {
+            // readParams.order = 'desc'
+            // } else {
+            // readParams.order = 'asc'
+            // }
+            // readData(readParams)
+            // }
+            // roleThead.onclick = function () {
+            // if (readParams.sortBy != 'role') {
+            // readParams.sortBy = 'role'
+            // readParams.order = 'asc'
+            // } else if (readParams.order == 'asc') {
+            // readParams.order = 'desc'
+            // } else {
+            // readParams.order = 'asc'
+            // }
+            // readData(readParams)
+            // }
+
+            const closeUserModal = document.getElementById('closeUserModal');
+            const closeOptionUserModal = document.getElementById('closeOptionUserModal');
+            const formUserModal = document.getElementById('formUserModal');
+            const submitUser = document.getElementById('submitUser');
+            const deleteConfirmation = document.getElementById('deleteConfirmation');
+            const overlay = document.getElementById('overlay');
+
+            function openDeleteModal(email) {
+                formUserModal.style.display = 'block'
+                deleteConfirmation.style.display = 'block'
+                overlay.style.display = 'block'
+                closeOptionUserModal.innerText = "No"
+                submitUser.innerText = "Yes"
+                submitUser.onclick = function () { deleteUser(email); }
+            }
+
+            function closeModal() {
+                formUserModal.style.display = 'none';
+                overlay.style.display = 'none';
+            }
+
+            closeUserModal.onclick = function () {
+                closeModal()
+            }
+
+            closeOptionUserModal.onclick = function () {
+                closeModal()
+            }
+
+            const deleteUser = (email) => {
+                fetch(`http://localhost:3000/data/users/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                }).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                }).then((response) => {
+                    closeModal()
+                    readParams.sortBy = 'userid'
+                    readParams.order = 'asc'
+                    readData(readParams)
+                });
+            }
+
+        </script>
+
+        <script src="/vendor/datatables/jquery.dataTables.min.js"></script>
+        <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+    </body>
+
+    </html>

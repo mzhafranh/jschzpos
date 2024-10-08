@@ -31,100 +31,185 @@ module.exports = function (db) {
     }
 
     router.get('/', async function (req, res,) {
-        const url = req.url == '/' ? '/?page=1' : req.url;
+        // const url = req.url == '/' ? '/?page=1' : req.url;
         const page = req.query.page || 1;
         const limit = 5;
         const offset = (page - 1) * limit;
         const wheres = []
         const values = []
-        const filter = req.url
+        // const filter = req.url
         var count = 1;
-        var sortBy = req.query.sortBy == undefined ? `id` : req.query.sortBy;
+        var sortBy = req.query.sortBy == undefined ? `timestamp` : req.query.sortBy;
         var order = req.query.order == undefined ? `asc` : req.query.order;
 
+        // console.log('Query: ' + req.query)
+        // console.log('Filter: ' + filter)
 
-        console.log('Query: ' + req.query)
-        console.log('Filter: ' + filter)
+        if (req.body.startDate || req.body.endDate) {
+            if (req.body.startDate && req.body.endDate) {
 
-        // if (req.query.id && req.query.idCheck == 'on') {
-        //     wheres.push(`id = $${count++}`);
-        //     values.push(req.query.id);
-        // }
+                let endDate = new Date(req.body.endDate)
+                endDate.setDate(endDate.getDate() + 1)
+                let year = endDate.getFullYear();
+                let month = String(endDate.getMonth() + 1).padStart(2, '0');
+                let day = String(endDate.getDate()).padStart(2, '0');
+                let formattedEndDate = `${year}-${month}-${day}`
 
-        // if (req.query.string && req.query.stringCheck == 'on') {
-        //     wheres.push(`string ilike '%' || $${count++} || '%'`);
-        //     values.push(req.query.string);
-        // }
+                wheres.push(`time BETWEEN $${count++} AND $${count++}`)
+                values.push(req.body.startDate);
+                values.push(endDate);
+                filterPageArray.push(`&startDate=${req.body.startDate}`)
+                filterPageArray.push(`&endDate=${formattedEndDate}`)
+            }
+            else if (req.body.startDate) {
+                wheres.push(`time >= $${count++}`)
+                values.push(req.body.startDate);
+                filterPageArray.push(`&startDate=${req.body.startDate}`)
+            }
+            else if (req.body.endDate) {
 
-        // if (req.query.integer && req.query.integerCheck == 'on') {
-        //     wheres.push(`integer = $${count++}`);
-        //     values.push(req.query.integer);
-        // }
+                let endDate = new Date(req.body.endDate)
+                endDate.setDate(endDate.getDate() + 1)
+                let year = endDate.getFullYear();
+                let month = String(endDate.getMonth() + 1).padStart(2, '0');
+                let day = String(endDate.getDate()).padStart(2, '0');
+                let formattedEndDate = `${year}-${month}-${day}`
 
-        // if (req.query.float && req.query.floatCheck == 'on') {
-        //     wheres.push(`float = $${count++}`);
-        //     values.push(req.query.float);
-        // }
-
-        // if (req.query.dateCheck == 'on') {
-        //     if (req.query.startDate != '' && req.query.endDate != '') {
-        //         wheres.push(`date BETWEEN $${count++} AND $${count++}`)
-        //         values.push(req.query.startDate);
-        //         values.push(req.query.endDate);
-        //     }
-        //     else if (req.query.startDate) {
-        //         wheres.push(`date > $${count++}`)
-        //         values.push(req.query.startDate);
-        //     }
-        //     else if (req.query.endDate) {
-        //         wheres.push(`date < $${count++}`)
-        //         values.push(req.query.endDate);
-        //     }
-        // }
-
-        // if (req.query.boolean && req.query.booleanCheck == 'on') {
-        //     wheres.push(`boolean = $${count++}`);
-        //     values.push(req.query.boolean);
-        // }
-
-
-        let sql = 'SELECT COUNT(*) AS total FROM gudang';
-        if (wheres.length > 0) {
-            sql += ` WHERE ${wheres.join(' AND ')}`
+                wheres.push(`time <= $${count++}`)
+                values.push(endDate);
+                filterPageArray.push(`&endDate=${formattedEndDate}`)
+            }
         }
 
-        console.log('SQL Count: ' + sql)
+        let sql = `
+                    SELECT 
+                        DATE_TRUNC('month', time) AS month,
+                        'Purchases' AS type,
+                        SUM(totalsum) AS total
+                    FROM purchases            
+        `;
+        let sqlCount = `
+                    WITH combined AS (
+                        SELECT DATE_TRUNC('month', time) AS month
+                        FROM purchases
+        `
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+            sqlCount += ` WHERE ${wheres.join(' AND ')}`
+        }
+        sql += `
+                    GROUP BY month
+
+                    UNION ALL
+
+                    SELECT 
+                        DATE_TRUNC('month', time) AS month,
+                        'Sales' AS type,
+                        SUM(totalsum) AS total
+                    FROM sales
+        `
+        sqlCount += `
+                    UNION
+                    SELECT DATE_TRUNC('month', time) AS month
+                    FROM sales
+        `
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+            sqlCount += ` WHERE ${wheres.join(' AND ')}`
+        }
+        sql += `
+                    GROUP BY month
+                    ORDER BY month;
+        `
+        sqlCount += `
+                    SELECT COUNT(DISTINCT month) AS total
+                    FROM combined;
+        `
+
+        console.log('SQL Count: ' + sqlCount)
+        console.log('SQL: ' + sql)
 
         try {
-            db.query(sql, values, (err, data) => {
+            db.query(sql, [...values], (err, data) => {
                 if (err) {
                     console.error(err);
                 }
-                const totalPages = Math.ceil(data.rows[0].total / limit)
-                const totalData = data.rows[0].total
-                sql = 'SELECT * FROM gudang'
-                if (wheres.length > 0) {
-                    sql += ` WHERE ${wheres.join(' AND ')}`
+                // console.log(data.rows)
+
+                const monthlyData = {};
+
+                function formatCurrency(value) {
+                    const formatter = new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    return formatter.format(value);
                 }
-                sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
-                console.log('SQL: ' + sql)
-                console.log([...values, limit, offset])
-                db.query(sql, [...values, limit, offset], (err, data) => {
-                    if (err) {
-                        console.error(err);
+
+                data.rows.forEach((item) => {
+                    // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
+                    const date = new Date(item.month);
+                    const month = new Intl.DateTimeFormat('en-US', {
+                        month: 'short',
+                        year: '2-digit'
+                      }).format(date);
+
+                    if (!monthlyData[month]) {
+                        monthlyData[month] = { expense: 0, revenue: 0 };
                     }
-                    res.status(200).json({
-                        data: data.rows,
-                        totalData,
-                        totalPages,
-                        display: limit,
-                        page: parseInt(page)
-                    })
+
+                    if (item.type === 'Purchases') {
+                        monthlyData[month].expense += parseFloat(item.total);
+                    } else if (item.type === 'Sales') {
+                        monthlyData[month].revenue += parseFloat(item.total);
+                    }
+                });
+
+                const resultArray = Object.entries(monthlyData).map(([month, values]) => ({
+                    month,
+                    expense: formatCurrency(values.expense),
+                    revenue: formatCurrency(values.revenue),
+                    earnings: formatCurrency(values.revenue - values.expense)
+                }));
+
+                console.log(resultArray);
+
+                res.status(200).json({
+                    data: resultArray
                 })
             })
         } catch (err) {
             res.status(500).json({ message: "error ambil data" })
         }
+
+        // try {
+        //     db.query(sqlCount, values, (err, data) => {
+        //         if (err) {
+        //             console.error(err);
+        //         }
+        //         const totalPages = Math.ceil(data.rows[0].total / limit)
+        //         const totalData = data.rows[0].total
+        //         if (wheres.length > 0) {
+        //             sql += ` WHERE ${wheres.join(' AND ')}`
+        //         }
+        //         sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
+        //         console.log('SQL: ' + sql)
+        //         console.log([...values, limit, offset])
+        //         db.query(sql, [...values, limit, offset], (err, data) => {
+        //             if (err) {
+        //                 console.error(err);
+        //             }
+        //             res.status(200).json({
+        //                 data: data.rows
+        //             })
+        //         })
+        //     })
+        // } catch (err) {
+        //     res.status(500).json({ message: "error ambil data" })
+        // }
+
     })
 
     router.get('/users', (req, res,) => {
