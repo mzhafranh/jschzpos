@@ -34,12 +34,12 @@
                                                 <div class="row mb-3">
                                                     <div class="col-md-6">
                                                         <label for="startDate" class="col-form-label">Start Date</label>
-                                                        <input type="datetime-local" class="form-control" id="startDate"
+                                                        <input type="date" class="form-control" id="startDate"
                                                             name="startDate">
                                                     </div>
                                                     <div class="col-md-6 pl-0">
                                                         <label for="endDate" class="col-form-label">End Date</label>
-                                                        <input type="datetime-local" class="form-control" id="endDate"
+                                                        <input type="date" class="form-control" id="endDate"
                                                             name="endDate">
                                                     </div>
                                                 </div>
@@ -337,6 +337,8 @@
                 limit: 3,
                 sortBy: "date",
                 order: "asc",
+                endDate: '',
+                startDate: '',
                 query: ''
             }
 
@@ -550,6 +552,15 @@
                 }
                 readData(readParams)
             }
+
+            document.getElementById('dashboardForm').addEventListener('submit', function (event) {
+                event.preventDefault()
+                readParams.startDate = document.getElementById('startDate').value
+                readParams.endDate = document.getElementById('endDate').value
+                console.log(readParams)
+                readData(readParams)
+            });
+
 
         </script>
 

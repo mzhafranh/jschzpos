@@ -40,33 +40,30 @@ module.exports = function (db) {
         const values = []
         // const filter = req.url
         var count = 1;
+        var countCustomer = 1;
         var sortBy = req.query.sortBy == undefined ? `date` : req.query.sortBy;
         var order = req.query.order == undefined ? `asc` : req.query.order;
 
         // console.log('Query: ' + req.query)
         // console.log('Filter: ' + filter)
 
-        if (req.body.startDate || req.body.endDate) {
-            if (req.body.startDate && req.body.endDate) {
-
-                let endDate = new Date(req.body.endDate)
-                endDate.setDate(endDate.getDate() + 1)
-                wheres.push(`time >= $${count++} AND time <= $${count++}`)
-                wheresCustomer.push(`s.time >= $${count++} AND s.time <= $${count++}`)
-                values.push(req.body.startDate);
+        if (req.query.startDate || req.query.endDate) {
+            if (req.query.startDate && req.query.endDate) {
+                let endDate = new Date(req.query.endDate)
+                wheres.push(`time BETWEEN $${count++} AND $${count++}`)
+                wheresCustomer.push(`s.time BETWEEN $${countCustomer++} AND $${countCustomer++}`)
+                values.push(req.query.startDate);
                 values.push(endDate);
             }
-            else if (req.body.startDate) {
+            else if (req.query.startDate) {
                 wheres.push(`time >= $${count++}`)
-                wheresCustomer.push(`s.time >= $${count++}`)
-                values.push(req.body.startDate);
+                wheresCustomer.push(`s.time >= $${countCustomer++}`)
+                values.push(req.query.startDate);
             }
-            else if (req.body.endDate) {
-
-                let endDate = new Date(req.body.endDate)
-                endDate.setDate(endDate.getDate() + 1)
+            else if (req.query.endDate) {
+                let endDate = new Date(req.query.endDate)
                 wheres.push(`time <= $${count++}`)
-                wheresCustomer.push(`s.time <= $${count++}`)
+                wheresCustomer.push(`s.time <= $${countCustomer++}`)
                 values.push(endDate);
             }
         }
@@ -118,21 +115,22 @@ module.exports = function (db) {
         `
         if (wheres.length > 0) {
             sql += ` WHERE ${wheres.join(' AND ')}`
-            sqlCount += ` WHERE ${wheres.join(' AND ')}`
         }
         sql += `
                     GROUP BY month
                     ORDER BY month;
         `
-        // console.log('SQL Customer: ' + sqlCustomer)
-        // console.log('SQL: ' + sql)
+        console.log('SQL: ' + sql)
+        console.log('SQL Customer: ' + sqlCustomer)
+        console.log(values)
 
         try {
             db.query(sql, [...values], (err, data) => {
                 if (err) {
                     console.error(err);
                 }
-                // console.log(data.rows)
+                console.log('Data Rows Dashboard')
+                console.log(data.rows)
 
                 const monthlyData = {};
 
@@ -142,7 +140,7 @@ module.exports = function (db) {
                     const month = new Intl.DateTimeFormat('en-US', {
                         month: 'short',
                         year: '2-digit'
-                      }).format(date);
+                    }).format(date);
 
                     if (!monthlyData[month]) {
                         monthlyData[month] = { date, expense: 0, revenue: 0 };
@@ -162,7 +160,7 @@ module.exports = function (db) {
                     revenue: values.revenue,
                     earning: values.revenue - values.expense
                 }));
-                
+
                 const unsortedArray = Object.entries(monthlyData).map(([month, values]) => ({
                     date: values.date,
                     monthly: month,
@@ -171,28 +169,28 @@ module.exports = function (db) {
                     earning: values.revenue - values.expense
                 }));
 
-                if (sortBy == 'date' && order == 'asc'){
-                    resultArray.sort((a,b) => new Date(a.date) - new Date(b.date))
-                } else if (sortBy == 'date' && order == 'desc'){
-                    resultArray.sort((a,b) => new Date(b.date) - new Date(a.date))
+                if (sortBy == 'date' && order == 'asc') {
+                    resultArray.sort((a, b) => new Date(a.date) - new Date(b.date))
+                } else if (sortBy == 'date' && order == 'desc') {
+                    resultArray.sort((a, b) => new Date(b.date) - new Date(a.date))
                 }
 
-                if (sortBy == 'expense' && order == 'asc'){
-                    resultArray.sort((a,b) => a.expense - b.expense)
-                } else if (sortBy == 'expense' && order == 'desc'){
-                    resultArray.sort((a,b) => b.expense - a.expense)
+                if (sortBy == 'expense' && order == 'asc') {
+                    resultArray.sort((a, b) => a.expense - b.expense)
+                } else if (sortBy == 'expense' && order == 'desc') {
+                    resultArray.sort((a, b) => b.expense - a.expense)
                 }
 
-                if (sortBy == 'revenue' && order == 'asc'){
-                    resultArray.sort((a,b) => a.revenue - b.revenue)
-                } else if (sortBy == 'revenue' && order == 'desc'){
-                    resultArray.sort((a,b) => b.revenue - a.revenue)
+                if (sortBy == 'revenue' && order == 'asc') {
+                    resultArray.sort((a, b) => a.revenue - b.revenue)
+                } else if (sortBy == 'revenue' && order == 'desc') {
+                    resultArray.sort((a, b) => b.revenue - a.revenue)
                 }
 
-                if (sortBy == 'earning' && order == 'asc'){
-                    resultArray.sort((a,b) => a.earning - b.earning)
-                } else if (sortBy == 'earning' && order == 'desc'){
-                    resultArray.sort((a,b) => b.earning - a.earning)
+                if (sortBy == 'earning' && order == 'asc') {
+                    resultArray.sort((a, b) => a.earning - b.earning)
+                } else if (sortBy == 'earning' && order == 'desc') {
+                    resultArray.sort((a, b) => b.earning - a.earning)
                 }
 
                 console.log(resultArray.slice(offset, offset + limit));
@@ -200,12 +198,13 @@ module.exports = function (db) {
                 const totalPages = Math.ceil(resultArray.length / limit)
                 const totalData = resultArray.length
 
-
-
                 db.query(sqlCustomer, [...values], (err, dataCustomer) => {
                     if (err) {
                         console.error(err);
                     }
+
+                    console.log('Data Rows Customer')
+                    console.log(dataCustomer.rows)
 
                     let totalSales = 0
 
