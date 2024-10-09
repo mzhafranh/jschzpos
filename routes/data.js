@@ -32,14 +32,14 @@ module.exports = function (db) {
 
     router.get('/', async function (req, res,) {
         // const url = req.url == '/' ? '/?page=1' : req.url;
-        const page = req.query.page || 1;
-        const limit = 5;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
         const wheres = []
         const values = []
         // const filter = req.url
         var count = 1;
-        var sortBy = req.query.sortBy == undefined ? `timestamp` : req.query.sortBy;
+        var sortBy = req.query.sortBy == undefined ? `date` : req.query.sortBy;
         var order = req.query.order == undefined ? `asc` : req.query.order;
 
         // console.log('Query: ' + req.query)
@@ -126,8 +126,8 @@ module.exports = function (db) {
                     FROM combined;
         `
 
-        console.log('SQL Count: ' + sqlCount)
-        console.log('SQL: ' + sql)
+        // console.log('SQL Count: ' + sqlCount)
+        // console.log('SQL: ' + sql)
 
         try {
             db.query(sql, [...values], (err, data) => {
@@ -138,15 +138,15 @@ module.exports = function (db) {
 
                 const monthlyData = {};
 
-                function formatCurrency(value) {
-                    const formatter = new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                    return formatter.format(value);
-                }
+                // function formatCurrency(value) {
+                //     const formatter = new Intl.NumberFormat('id-ID', {
+                //         style: 'currency',
+                //         currency: 'IDR',
+                //         minimumFractionDigits: 2,
+                //         maximumFractionDigits: 2
+                //     });
+                //     return formatter.format(value);
+                // }
 
                 data.rows.forEach((item) => {
                     // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
@@ -157,7 +157,7 @@ module.exports = function (db) {
                       }).format(date);
 
                     if (!monthlyData[month]) {
-                        monthlyData[month] = { expense: 0, revenue: 0 };
+                        monthlyData[month] = { date, expense: 0, revenue: 0 };
                     }
 
                     if (item.type === 'Purchases') {
@@ -168,16 +168,48 @@ module.exports = function (db) {
                 });
 
                 const resultArray = Object.entries(monthlyData).map(([month, values]) => ({
+                    date: values.date,
                     month,
-                    expense: formatCurrency(values.expense),
-                    revenue: formatCurrency(values.revenue),
-                    earnings: formatCurrency(values.revenue - values.expense)
+                    expense: values.expense,
+                    revenue: values.revenue,
+                    earning: values.revenue - values.expense
                 }));
 
-                console.log(resultArray);
+                if (sortBy == 'date' && order == 'asc'){
+                    resultArray.sort((a,b) => new Date(a.date) - new Date(b.date))
+                } else if (sortBy == 'date' && order == 'desc'){
+                    resultArray.sort((a,b) => new Date(b.date) - new Date(a.date))
+                }
+
+                if (sortBy == 'expense' && order == 'asc'){
+                    resultArray.sort((a,b) => a.expense - b.expense)
+                } else if (sortBy == 'expense' && order == 'desc'){
+                    resultArray.sort((a,b) => b.expense - a.expense)
+                }
+
+                if (sortBy == 'revenue' && order == 'asc'){
+                    resultArray.sort((a,b) => a.revenue - b.revenue)
+                } else if (sortBy == 'revenue' && order == 'desc'){
+                    resultArray.sort((a,b) => b.revenue - a.revenue)
+                }
+
+                if (sortBy == 'earning' && order == 'asc'){
+                    resultArray.sort((a,b) => a.earning - b.earning)
+                } else if (sortBy == 'earning' && order == 'desc'){
+                    resultArray.sort((a,b) => b.earning - a.earning)
+                }
+
+                console.log(resultArray.slice(offset, offset + limit));
+
+                const totalPages = Math.ceil(resultArray.length / limit)
+                const totalData = resultArray.length
 
                 res.status(200).json({
-                    data: resultArray
+                    data: resultArray.slice(offset, offset + limit),
+                    totalPages,
+                    totalData,
+                    limit,
+                    page
                 })
             })
         } catch (err) {
