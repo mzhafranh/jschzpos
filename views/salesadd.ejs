@@ -284,9 +284,13 @@
                             }
                             return response.json();
                         }).then((response) => {
-                            let selectOptions = '<option value ="" disabled selected>--- Select Customer ---</option>'
+                            let selectOptions = '<option value ="" disabled>--- Select Customer ---</option>'
                             response.data.forEach((item, index) => {
-                                selectOptions += `<option value ="${item.customerid}">${item.name}</option>`
+                                if (item.name == 'umum'){
+                                    selectOptions += `<option value ="${item.customerid}" selected>${item.name}</option>`
+                                } else {
+                                    selectOptions += `<option value ="${item.customerid}">${item.name}</option>`
+                                }
                             })
                             document.getElementById('customer').innerHTML = selectOptions
                         })
