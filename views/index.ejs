@@ -72,7 +72,7 @@
                                                             class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                             Purchases</div>
                                                         <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                            id="purchases">Rp 40,000
+                                                            id="purchases">Rp 0,00
                                                         </div>
                                                     </div>
                                                     <div class="col-auto">
@@ -92,7 +92,7 @@
                                                             class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                             Sales</div>
                                                         <div class="h5 mb-0 font-weight-bold text-gray-800" id="sales">
-                                                            Rp 215,000
+                                                            Rp 0,00
                                                         </div>
                                                     </div>
                                                     <div class="col-auto">
@@ -110,9 +110,9 @@
                                                     <div class="col mr-2">
                                                         <div
                                                             class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                            Earnings</div>
+                                                            Earning</div>
                                                         <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                            id="earnings">Rp 215,000</div>
+                                                            id="earning">Rp 0,00</div>
                                                     </div>
                                                     <div class="col-auto">
                                                         <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -131,7 +131,7 @@
                                                             class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                                             Total Sales</div>
                                                         <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                            id="totalsales">18</div>
+                                                            id="totalsales">0</div>
                                                     </div>
                                                     <div class="col-auto">
                                                         <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -227,6 +227,26 @@
                                             <div class="table-responsive">
                                                 <div id="dataTable_wrapper" class="dataTables_wrapper dt-bootstrap4">
                                                     <div class="row">
+                                                        <div class="col-sm-12 col-md-6">
+                                                            <div class="dataTables_length"><label>Show
+                                                                    <select name="dataTable_length"
+                                                                        id="dataTable_length" aria-controls="dataTable"
+                                                                        class="custom-select custom-select-sm form-control form-control-sm">
+                                                                        <option value=3>3</option>
+                                                                        <option value=10>10</option>
+                                                                        <option value=100>100</option>
+                                                                    </select> entries</label></div>
+                                                        </div>
+                                                        <div class="col-sm-12 col-md-6">
+                                                            <div id="dataTable_filter" class="dataTables_filter">
+                                                                <label>Search:<input type="search" id="search-input"
+                                                                        class="form-control form-control-sm"
+                                                                        placeholder=""
+                                                                        aria-controls="dataTable"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
                                                         <div class="col-sm-12">
                                                             <table class="table table-bordered dataTable" id="dataTable"
                                                                 width="100%" cellspacing="0" role="grid"
@@ -253,11 +273,11 @@
                                                                             aria-label="Revenue: activate to sort column ascending"
                                                                             style="width: 162px;">Revenue
                                                                         </th>
-                                                                        <th id="earningsThead" class="sorting"
+                                                                        <th id="earningThead" class="sorting"
                                                                             tabindex="0" aria-controls="dataTable"
                                                                             rowspan="1" colspan="1"
-                                                                            aria-label="Earnings: activate to sort column ascending"
-                                                                            style="width: 162px;">Earnings
+                                                                            aria-label="Earning: activate to sort column ascending"
+                                                                            style="width: 162px;">Earning
                                                                         </th>
                                                                     </tr>
                                                                 </thead>
@@ -275,34 +295,266 @@
                                                             </table>
                                                         </div>
                                                     </div>
+                                                    <div class="row">
+                                                        <div class="col-sm-12 col-md-5">
+                                                            <div class="dataTables_info" id="dataTable_info"
+                                                                role="status" aria-live="polite">Showing 0 to 0 of 0
+                                                                entries</div>
+                                                        </div>
+                                                        <div class="col-sm-12 col-md-7">
+                                                            <div class="dataTables_paginate paging_simple_numbers"
+                                                                id="dataTable_paginate">
+                                                                <ul class="pagination">
+
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- /.container-fluid -->
                             </div>
-                            <!-- End of Main Content -->
-
+                            <!-- /.container-fluid -->
                     </div>
-                    <!-- End of Content Wrapper -->
+                    <!-- End of Main Content -->
                     <%- include('partials/footer.ejs')%>
                 </div>
-                <!-- End of Page Wrapper -->
+                <!-- End of Content Wrapper -->
+        </div>
+        <!-- End of Page Wrapper -->
 
-                <!-- Scroll to Top Button-->
-                <a class="scroll-to-top rounded" href="#page-top">
-                    <i class="fas fa-angle-up"></i>
-                </a>
+        <!-- Scroll to Top Button-->
+        <a class="scroll-to-top rounded" href="#page-top">
+            <i class="fas fa-angle-up"></i>
+        </a>
 
-                <script>
+        <script>
+            var readParams = {
+                page: 1,
+                totalPages: 1,
+                limit: 3,
+                sortBy: "date",
+                order: "asc",
+                query: ''
+            }
 
+            var dataArray = []
 
-                </script>
+            function formatCurrency(value) {
+                const formatter = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                return formatter.format(value);
+            }
 
-                <script src="vendor/datatables/jquery.dataTables.min.js"></script>
-                <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
+            const readData = (params) => {
+                fetch(`http://localhost:3000/data/?${new URLSearchParams(params).toString()}`).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                }).then((response) => {
+                    let newParams = { ...params };
+
+                    dataArray = [...response.unsortedData]
+
+                    let monthlyThead = document.getElementById('monthlyThead')
+                    let expenseThead = document.getElementById('expenseThead')
+                    let revenueThead = document.getElementById('revenueThead')
+                    let earningThead = document.getElementById('earningThead')
+
+                    if (params.sortBy == "date" && params.order == "asc") {
+                        monthlyThead.className = 'sorting sorting_asc'
+                    } else if (params.sortBy == "date" && params.order == "desc") {
+                        monthlyThead.className = 'sorting sorting_desc'
+                    } else {
+                        monthlyThead.className = 'sorting'
+                    }
+
+                    if (params.sortBy == "expense" && params.order == "asc") {
+                        expenseThead.className = 'sorting sorting_asc'
+                    } else if (params.sortBy == "expense" && params.order == "desc") {
+                        expenseThead.className = 'sorting sorting_desc'
+                    } else {
+                        expenseThead.className = 'sorting'
+                    }
+
+                    if (params.sortBy == "revenue" && params.order == "asc") {
+                        revenueThead.className = 'sorting sorting_asc'
+                    } else if (params.sortBy == "revenue" && params.order == "desc") {
+                        revenueThead.className = 'sorting sorting_desc'
+                    } else {
+                        revenueThead.className = 'sorting'
+                    }
+
+                    if (params.sortBy == "earning" && params.order == "asc") {
+                        earningThead.className = 'sorting sorting_asc'
+                    } else if (params.sortBy == "earning" && params.order == "desc") {
+                        earningThead.className = 'sorting sorting_desc'
+                    } else {
+                        earningThead.className = 'sorting'
+                    }
+
+                    let htmlTbody = '';
+                    let htmlTfoot = '';
+                    let totalExpense = 0;
+                    let totalRevenue = 0;
+                    let totalEarning = 0;
+                    response.data.forEach((item, index) => {
+                        htmlTbody += `
+                            <tr>
+                                <td>${item.monthly}</td>
+                                <td>${formatCurrency(item.expense)}</td>
+                                <td>${formatCurrency(item.revenue)}</td>
+                                <td>${formatCurrency(item.earning)}</td>
+                            </tr>
+                        `
+                        totalExpense += item.expense
+                        totalRevenue += item.revenue
+                        totalEarning += item.earning
+                    })
+                    htmlTfoot += `
+                        <tr>
+                            <th rowspan="1" colspan="1">Total</th>
+                            <th rowspan="1" colspan="1">${formatCurrency(totalExpense)}</th>
+                            <th rowspan="1" colspan="1">${formatCurrency(totalRevenue)}</th>
+                            <th rowspan="1" colspan="1">${formatCurrency(totalEarning)}</th>
+                        </tr>
+                    `
+                    document.querySelector('table tbody').innerHTML = htmlTbody
+                    document.querySelector('table tfoot').innerHTML = htmlTfoot
+                    document.getElementById('purchases').value = formatCurrency(totalExpense)
+                    document.getElementById('sales').value = formatCurrency(totalRevenue)
+                    document.getElementById('earning').value = formatCurrency(totalEarning)
+                    document.getElementById('totalsales').value
+
+                    let startingIndex = (response.page - 1) * response.limit
+
+                    let showEntryText = ''
+                    if (response.totalData == 0) {
+                        showEntryText += `Showing 0 to 0 of 0 entries`
+                    } else if (response.page * response.limit > response.totalData || response.limit == 0) {
+                        showEntryText += `Showing ${startingIndex + 1} to ${response.totalData} of ${response.totalData}`
+                    } else {
+                        showEntryText += `Showing ${startingIndex + 1} to ${response.page * response.limit} of ${response.totalData}`
+                    }
+                    document.getElementById('dataTable_info').innerText = showEntryText
+
+                    let paging = '';
+
+                    if (!(params.page == 1)) {
+                        newParams.page = params.page - 1;
+                        paging += `<li class="paginate_button page-item previous enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Previous</span></button></li>`
+                    } else {
+                        paging += `<li class="paginate_button page-item previous disabled"><span class="text-gray-600 page-link" aria-hidden="true">Previous</span></li>`
+                    }
+
+                    newParams.page = 1;
+                    for (let i = 1; i <= response.totalPages; i++) {
+                        if (response.page == i) {
+                            newParams.page = i;
+                            paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                        }
+                        else {
+                            newParams.page = i;
+                            paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                        }
+                    }
+
+                    if (!(params.page == response.totalPages)) {
+                        newParams.page = params.page + 1
+                        paging += `<li class="paginate_button page-item next enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Next</span></button></li>`
+                    } else {
+                        paging += `<li class="paginate_button page-item next disabled"><span class="text-gray-600 page-link" aria-hidden="true">Next</span></li>`
+
+                    }
+                    document.querySelector('.pagination').innerHTML = paging
+                })
+                    .catch((err) => {
+                        console.error(err);
+                    });
+            }
+
+            readData(readParams)
+
+            document.getElementById('dataTable_length').addEventListener('change', function () {
+                const selectElement = document.getElementById('dataTable_length')
+                readParams.limit = parseInt(selectElement.value)
+                console.log(readParams)
+                readData(readParams)
+            });
+
+            document.getElementById('search-input').addEventListener('change', function () {
+                const searchInput = document.getElementById('search-input')
+                const selectElement = document.getElementById('dataTable_length')
+                readParams.limit = parseInt(selectElement.value)
+                readParams.query = searchInput.value
+                console.log(readParams.query)
+                readData(readParams)
+            })
+
+            const monthlyThead = document.getElementById('monthlyThead')
+            const expenseThead = document.getElementById('expenseThead')
+            const revenueThead = document.getElementById('revenueThead')
+            const earningThead = document.getElementById('earningThead')
+
+            monthlyThead.onclick = function () {
+                if (readParams.sortBy != 'date') {
+                    readParams.sortBy = 'date'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            expenseThead.onclick = function () {
+                if (readParams.sortBy != 'expense') {
+                    readParams.sortBy = 'expense'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            revenueThead.onclick = function () {
+                if (readParams.sortBy != 'revenue') {
+                    readParams.sortBy = 'revenue'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+            earningThead.onclick = function () {
+                if (readParams.sortBy != 'earning') {
+                    readParams.sortBy = 'earning'
+                    readParams.order = 'asc'
+                } else if (readParams.order == 'asc') {
+                    readParams.order = 'desc'
+                } else {
+                    readParams.order = 'asc'
+                }
+                readData(readParams)
+            }
+
+        </script>
+
+        <script src="vendor/datatables/jquery.dataTables.min.js"></script>
+        <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
     </body>
 
     </html>

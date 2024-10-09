@@ -36,6 +36,7 @@ module.exports = function (db) {
         const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
         const wheres = []
+        const wheresCustomer = []
         const values = []
         // const filter = req.url
         var count = 1;
@@ -50,34 +51,23 @@ module.exports = function (db) {
 
                 let endDate = new Date(req.body.endDate)
                 endDate.setDate(endDate.getDate() + 1)
-                let year = endDate.getFullYear();
-                let month = String(endDate.getMonth() + 1).padStart(2, '0');
-                let day = String(endDate.getDate()).padStart(2, '0');
-                let formattedEndDate = `${year}-${month}-${day}`
-
-                wheres.push(`time BETWEEN $${count++} AND $${count++}`)
+                wheres.push(`time >= $${count++} AND time <= $${count++}`)
+                wheresCustomer.push(`s.time >= $${count++} AND s.time <= $${count++}`)
                 values.push(req.body.startDate);
                 values.push(endDate);
-                filterPageArray.push(`&startDate=${req.body.startDate}`)
-                filterPageArray.push(`&endDate=${formattedEndDate}`)
             }
             else if (req.body.startDate) {
                 wheres.push(`time >= $${count++}`)
+                wheresCustomer.push(`s.time >= $${count++}`)
                 values.push(req.body.startDate);
-                filterPageArray.push(`&startDate=${req.body.startDate}`)
             }
             else if (req.body.endDate) {
 
                 let endDate = new Date(req.body.endDate)
                 endDate.setDate(endDate.getDate() + 1)
-                let year = endDate.getFullYear();
-                let month = String(endDate.getMonth() + 1).padStart(2, '0');
-                let day = String(endDate.getDate()).padStart(2, '0');
-                let formattedEndDate = `${year}-${month}-${day}`
-
                 wheres.push(`time <= $${count++}`)
+                wheresCustomer.push(`s.time <= $${count++}`)
                 values.push(endDate);
-                filterPageArray.push(`&endDate=${formattedEndDate}`)
             }
         }
 
@@ -88,14 +78,25 @@ module.exports = function (db) {
                         SUM(totalsum) AS total
                     FROM purchases            
         `;
-        let sqlCount = `
-                    WITH combined AS (
-                        SELECT DATE_TRUNC('month', time) AS month
-                        FROM purchases
+        let sqlCustomer = `
+                    SELECT 
+                        CASE 
+                            WHEN c.customerid = 1 THEN c.customerid
+                            ELSE 2
+                        END AS customer_group,
+                        CASE 
+                            WHEN c.customerid = 1 THEN 'Direct'
+                            ELSE 'Customer' 
+                        END AS customer_name,
+                        COUNT(s.invoice) AS sales_count
+                    FROM 
+                        customers c
+                    LEFT JOIN 
+                        sales s ON c.customerid = s.customer
         `
         if (wheres.length > 0) {
             sql += ` WHERE ${wheres.join(' AND ')}`
-            sqlCount += ` WHERE ${wheres.join(' AND ')}`
+            sqlCustomer += ` WHERE ${wheresCustomer.join(' AND ')}`
         }
         sql += `
                     GROUP BY month
@@ -108,10 +109,12 @@ module.exports = function (db) {
                         SUM(totalsum) AS total
                     FROM sales
         `
-        sqlCount += `
-                    UNION
-                    SELECT DATE_TRUNC('month', time) AS month
-                    FROM sales
+        sqlCustomer += `
+                    GROUP BY 
+                        customer_group, customer_name
+                    ORDER BY 
+                        sales_count DESC;
+
         `
         if (wheres.length > 0) {
             sql += ` WHERE ${wheres.join(' AND ')}`
@@ -121,12 +124,7 @@ module.exports = function (db) {
                     GROUP BY month
                     ORDER BY month;
         `
-        sqlCount += `
-                    SELECT COUNT(DISTINCT month) AS total
-                    FROM combined;
-        `
-
-        // console.log('SQL Count: ' + sqlCount)
+        // console.log('SQL Customer: ' + sqlCustomer)
         // console.log('SQL: ' + sql)
 
         try {
@@ -137,16 +135,6 @@ module.exports = function (db) {
                 // console.log(data.rows)
 
                 const monthlyData = {};
-
-                // function formatCurrency(value) {
-                //     const formatter = new Intl.NumberFormat('id-ID', {
-                //         style: 'currency',
-                //         currency: 'IDR',
-                //         minimumFractionDigits: 2,
-                //         maximumFractionDigits: 2
-                //     });
-                //     return formatter.format(value);
-                // }
 
                 data.rows.forEach((item) => {
                     // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
@@ -169,7 +157,15 @@ module.exports = function (db) {
 
                 const resultArray = Object.entries(monthlyData).map(([month, values]) => ({
                     date: values.date,
-                    month,
+                    monthly: month,
+                    expense: values.expense,
+                    revenue: values.revenue,
+                    earning: values.revenue - values.expense
+                }));
+                
+                const unsortedArray = Object.entries(monthlyData).map(([month, values]) => ({
+                    date: values.date,
+                    monthly: month,
                     expense: values.expense,
                     revenue: values.revenue,
                     earning: values.revenue - values.expense
@@ -204,12 +200,29 @@ module.exports = function (db) {
                 const totalPages = Math.ceil(resultArray.length / limit)
                 const totalData = resultArray.length
 
-                res.status(200).json({
-                    data: resultArray.slice(offset, offset + limit),
-                    totalPages,
-                    totalData,
-                    limit,
-                    page
+
+
+                db.query(sqlCustomer, [...values], (err, dataCustomer) => {
+                    if (err) {
+                        console.error(err);
+                    }
+
+                    let totalSales = 0
+
+                    dataCustomer.rows.forEach((item) => {
+                        totalSales += parseInt(item.sales_count)
+                    })
+
+                    res.status(200).json({
+                        data: resultArray.slice(offset, offset + limit),
+                        unsortedData: unsortedArray,
+                        dataCustomer: dataCustomer.rows,
+                        totalSales,
+                        totalPages,
+                        totalData,
+                        limit,
+                        page
+                    })
                 })
             })
         } catch (err) {
