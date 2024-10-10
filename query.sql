@@ -240,12 +240,14 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF (TG_OP = 'INSERT') THEN
         UPDATE sales
-        SET totalsum = totalsum + NEW.totalprice
+        SET totalsum = totalsum + NEW.totalprice,
+            "change" = pay - (totalsum + NEW.totalprice)
         WHERE invoice = NEW.invoice;
 
     ELSIF (TG_OP = 'DELETE') THEN
         UPDATE sales
-        SET totalsum = totalsum - OLD.totalprice
+        SET totalsum = totalsum - OLD.totalprice,
+            "change" = pay - (totalsum - OLD.totalprice)
         WHERE invoice = OLD.invoice;
 
     ELSIF (TG_OP = 'UPDATE') THEN
@@ -254,14 +256,23 @@ BEGIN
             SELECT SUM(totalprice)
             FROM purchaseitems
             WHERE invoice = NEW.invoice
-        )
+        ),
+            "change" = pay - (
+                SELECT SUM(totalprice)
+                FROM purchaseitems
+                WHERE invoice = NEW.invoice
+            )
         WHERE invoice = NEW.invoice;
     END IF;
 
-    RETURN NEW;
-    RETURN OLD;
+    IF (TG_OP = 'DELETE') THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE TRIGGER trigger_manage_totalsum
 AFTER INSERT OR UPDATE OR DELETE ON purchaseitems

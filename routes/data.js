@@ -161,13 +161,8 @@ module.exports = function (db) {
                     earning: values.revenue - values.expense
                 }));
 
-                const unsortedArray = Object.entries(monthlyData).map(([month, values]) => ({
-                    date: values.date,
-                    monthly: month,
-                    expense: values.expense,
-                    revenue: values.revenue,
-                    earning: values.revenue - values.expense
-                }));
+                const rawArray = [...resultArray]
+                let filteredArray = []
 
                 if (sortBy == 'date' && order == 'asc') {
                     resultArray.sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -193,10 +188,17 @@ module.exports = function (db) {
                     resultArray.sort((a, b) => b.earning - a.earning)
                 }
 
+                if (req.query.query){
+                    const regex = new RegExp(req.query.query, 'i');
+                    filteredArray = resultArray.filter(item => regex.test(item.monthly))
+                } else {
+                    filteredArray = [...resultArray]
+                }
+
                 console.log(resultArray.slice(offset, offset + limit));
 
-                const totalPages = Math.ceil(resultArray.length / limit)
-                const totalData = resultArray.length
+                const totalPages = Math.ceil(filteredArray.length / limit)
+                const totalData = filteredArray.length
 
                 db.query(sqlCustomer, [...values], (err, dataCustomer) => {
                     if (err) {
@@ -213,8 +215,8 @@ module.exports = function (db) {
                     })
 
                     res.status(200).json({
-                        data: resultArray.slice(offset, offset + limit),
-                        unsortedData: unsortedArray,
+                        data: filteredArray.slice(offset, offset + limit),
+                        rawData: rawArray,
                         dataCustomer: dataCustomer.rows,
                         totalSales,
                         totalPages,
