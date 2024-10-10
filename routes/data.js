@@ -52,10 +52,15 @@ module.exports = function (db) {
         if (req.query.startDate || req.query.endDate) {
             if (req.query.startDate && req.query.endDate) {
                 let endDate = new Date(req.query.endDate)
+                endDate.setDate(endDate.getDate() + 1)
+                let year = endDate.getFullYear();
+                let month = String(endDate.getMonth() + 1).padStart(2, '0');
+                let day = String(endDate.getDate()).padStart(2, '0');
+                let formattedEndDate = `${year}-${month}-${day}`
                 wheres.push(`time BETWEEN $${count++} AND $${count++}`)
                 wheresCustomer.push(`s.time BETWEEN $${countCustomer++} AND $${countCustomer++}`)
                 values.push(req.query.startDate);
-                values.push(endDate);
+                values.push(formattedEndDate);
             }
             else if (req.query.startDate) {
                 wheres.push(`time >= $${count++}`)
@@ -64,19 +69,39 @@ module.exports = function (db) {
             }
             else if (req.query.endDate) {
                 let endDate = new Date(req.query.endDate)
+                endDate.setDate(endDate.getDate() + 1)
+                let year = endDate.getFullYear();
+                let month = String(endDate.getMonth() + 1).padStart(2, '0');
+                let day = String(endDate.getDate()).padStart(2, '0');
+                let formattedEndDate = `${year}-${month}-${day}`
                 wheres.push(`time <= $${count++}`)
                 wheresCustomer.push(`s.time <= $${countCustomer++}`)
-                values.push(endDate);
+                values.push(formattedEndDate);
             }
         }
 
-        let sql = `
+        // let sql = `
+        //             SELECT 
+        //                 DATE_TRUNC('month', time) AS month,
+        //                 'Purchases' AS type,
+        //                 SUM(totalsum) AS total
+        //             FROM purchases            
+        // `;
+
+        let sqlPurchase = `
                     SELECT 
-                        DATE_TRUNC('month', time) AS month,
-                        'Purchases' AS type,
-                        SUM(totalsum) AS total
-                    FROM purchases            
-        `;
+                        TO_CHAR(time, 'YYYY-MM') AS month,
+                        SUM(totalsum) AS total_purchases
+                    FROM 
+                        purchases
+        `
+        let sqlSale = `
+                    SELECT 
+                        TO_CHAR(time, 'YYYY-MM') AS month,
+                        SUM(totalsum) AS total_sales
+                    FROM 
+                        sales
+        `
         let sqlCustomer = `
                     SELECT 
                         CASE 
@@ -94,20 +119,33 @@ module.exports = function (db) {
                         sales s ON c.customerid = s.customer
         `
         if (wheres.length > 0) {
-            sql += ` WHERE ${wheres.join(' AND ')}`
+            sqlPurchase += ` WHERE ${wheres.join(' AND ')}`
+            sqlSale += ` WHERE ${wheres.join(' AND ')}`
             sqlCustomer += ` WHERE ${wheresCustomer.join(' AND ')}`
         }
-        sql += `
-                    GROUP BY month
-
-                    UNION ALL
-
-                    SELECT 
-                        DATE_TRUNC('month', time) AS month,
-                        'Sales' AS type,
-                        SUM(totalsum) AS total
-                    FROM sales
+        sqlPurchase += `
+                    GROUP BY 
+                        TO_CHAR(time, 'YYYY-MM')
+                    ORDER BY 
+                        month;
         `
+        sqlSale += `
+                    GROUP BY 
+                        TO_CHAR(time, 'YYYY-MM')
+                    ORDER BY 
+                        month;
+        `
+        // sql += `
+        //             GROUP BY month
+
+        //             UNION ALL
+
+        //             SELECT 
+        //                 DATE_TRUNC('month', time) AS month,
+        //                 'Sales' AS type,
+        //                 SUM(totalsum) AS total
+        //             FROM sales
+        // `
         sqlCustomer += `
                     GROUP BY 
                         customer_group, customer_name
@@ -115,118 +153,162 @@ module.exports = function (db) {
                         sales_count DESC;
 
         `
-        if (wheres.length > 0) {
-            sql += ` WHERE ${wheres.join(' AND ')}`
-        }
-        sql += `
-                    GROUP BY month
-                    ORDER BY month;
-        `
-        console.log('SQL: ' + sql)
+        // if (wheres.length > 0) {
+        //     sql += ` WHERE ${wheres.join(' AND ')}`
+        // }
+        // sql += `
+        //             GROUP BY month
+        //             ORDER BY month;
+        // `
+        console.log('SQL Purchase: ' + sqlPurchase)
+        console.log('SQL Sale: ' + sqlSale)
         console.log('SQL Customer: ' + sqlCustomer)
         console.log(values)
 
+        var dataPurchase = []
+        var dataSale = []
+
         try {
-            db.query(sql, [...values], (err, data) => {
+            db.query(sqlPurchase, [...values], (err, dataP) => {
                 if (err) {
                     console.error(err);
                 }
-                console.log('Data Rows Dashboard')
-                console.log(data.rows)
+                dataPurchase = [...dataP.rows]
+                console.log(dataPurchase)
 
-                const monthlyData = {};
-
-                data.rows.forEach((item) => {
-                    // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
-                    const date = new Date(item.month);
-                    const month = new Intl.DateTimeFormat('en-US', {
-                        month: 'short',
-                        year: '2-digit'
-                    }).format(date);
-
-                    if (!monthlyData[month]) {
-                        monthlyData[month] = { date, expense: 0, revenue: 0 };
-                    }
-
-                    if (item.type === 'Purchases') {
-                        monthlyData[month].expense += parseFloat(item.total);
-                    } else if (item.type === 'Sales') {
-                        monthlyData[month].revenue += parseFloat(item.total);
-                    }
-                });
-
-                const resultArray = Object.entries(monthlyData).map(([month, values]) => ({
-                    date: values.date,
-                    monthly: month,
-                    expense: values.expense,
-                    revenue: values.revenue,
-                    earning: values.revenue - values.expense
-                }));
-
-                const rawArray = [...resultArray]
-                let filteredArray = []
-
-                if (sortBy == 'date' && order == 'asc') {
-                    resultArray.sort((a, b) => new Date(a.date) - new Date(b.date))
-                } else if (sortBy == 'date' && order == 'desc') {
-                    resultArray.sort((a, b) => new Date(b.date) - new Date(a.date))
-                }
-
-                if (sortBy == 'expense' && order == 'asc') {
-                    resultArray.sort((a, b) => a.expense - b.expense)
-                } else if (sortBy == 'expense' && order == 'desc') {
-                    resultArray.sort((a, b) => b.expense - a.expense)
-                }
-
-                if (sortBy == 'revenue' && order == 'asc') {
-                    resultArray.sort((a, b) => a.revenue - b.revenue)
-                } else if (sortBy == 'revenue' && order == 'desc') {
-                    resultArray.sort((a, b) => b.revenue - a.revenue)
-                }
-
-                if (sortBy == 'earning' && order == 'asc') {
-                    resultArray.sort((a, b) => a.earning - b.earning)
-                } else if (sortBy == 'earning' && order == 'desc') {
-                    resultArray.sort((a, b) => b.earning - a.earning)
-                }
-
-                if (req.query.query) {
-                    const regex = new RegExp(req.query.query, 'i');
-                    filteredArray = resultArray.filter(item => regex.test(item.monthly))
-                } else {
-                    filteredArray = [...resultArray]
-                }
-
-                console.log(resultArray.slice(offset, offset + limit));
-
-                const totalPages = Math.ceil(filteredArray.length / limit)
-                const totalData = filteredArray.length
-
-                db.query(sqlCustomer, [...values], (err, dataCustomer) => {
+                db.query(sqlSale, [...values], (err, dataS) => {
                     if (err) {
                         console.error(err);
                     }
+                    dataSale = [...dataS.rows]
+                    console.log(dataSale)
 
-                    console.log('Data Rows Customer')
-                    console.log(dataCustomer.rows)
+                    const monthlyData = {};
 
-                    let totalSales = 0
+                    dataPurchase.forEach((item) => {
+                        // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
+                        const date = new Date(item.month);
+                        const month = new Intl.DateTimeFormat('en-US', {
+                            month: 'short',
+                            year: '2-digit'
+                        }).format(date);
 
-                    dataCustomer.rows.forEach((item) => {
-                        totalSales += parseInt(item.sales_count)
-                    })
+                        if (!monthlyData[month]) {
+                            monthlyData[month] = { date, expense: 0, revenue: 0 };
+                        }
 
-                    res.status(200).json({
-                        data: filteredArray.slice(offset, offset + limit),
-                        rawData: rawArray,
-                        dataCustomer: dataCustomer.rows,
-                        totalSales,
-                        totalPages,
-                        totalData,
-                        limit,
-                        page
+                        monthlyData[month].expense += parseFloat(item.total_purchases);
+                    });
+
+                    dataSale.forEach((item) => {
+                        // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
+                        const date = new Date(item.month);
+                        const month = new Intl.DateTimeFormat('en-US', {
+                            month: 'short',
+                            year: '2-digit'
+                        }).format(date);
+
+                        if (!monthlyData[month]) {
+                            monthlyData[month] = { date, expense: 0, revenue: 0 };
+                        }
+                        monthlyData[month].revenue += parseFloat(item.total_sales);
+                    });
+
+                    // data.rows.forEach((item) => {
+                    //     // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
+                    //     const date = new Date(item.month);
+                    //     const month = new Intl.DateTimeFormat('en-US', {
+                    //         month: 'short',
+                    //         year: '2-digit'
+                    //     }).format(date);
+
+                    //     if (!monthlyData[month]) {
+                    //         monthlyData[month] = { date, expense: 0, revenue: 0 };
+                    //     }
+
+                    //     if (item.type === 'Purchases') {
+                    //         monthlyData[month].expense += parseFloat(item.total);
+                    //     } else if (item.type === 'Sales') {
+                    //         monthlyData[month].revenue += parseFloat(item.total);
+                    //     }
+                    // });
+
+                    console.log(monthlyData)
+
+                    const resultArray = Object.entries(monthlyData).map(([month, values]) => ({
+                        date: values.date,
+                        monthly: month,
+                        expense: values.expense,
+                        revenue: values.revenue,
+                        earning: values.revenue - values.expense
+                    }));
+
+                    const rawArray = [...resultArray]
+                    let filteredArray = []
+
+                    if (sortBy == 'date' && order == 'asc') {
+                        resultArray.sort((a, b) => new Date(a.date) - new Date(b.date))
+                    } else if (sortBy == 'date' && order == 'desc') {
+                        resultArray.sort((a, b) => new Date(b.date) - new Date(a.date))
+                    }
+
+                    if (sortBy == 'expense' && order == 'asc') {
+                        resultArray.sort((a, b) => a.expense - b.expense)
+                    } else if (sortBy == 'expense' && order == 'desc') {
+                        resultArray.sort((a, b) => b.expense - a.expense)
+                    }
+
+                    if (sortBy == 'revenue' && order == 'asc') {
+                        resultArray.sort((a, b) => a.revenue - b.revenue)
+                    } else if (sortBy == 'revenue' && order == 'desc') {
+                        resultArray.sort((a, b) => b.revenue - a.revenue)
+                    }
+
+                    if (sortBy == 'earning' && order == 'asc') {
+                        resultArray.sort((a, b) => a.earning - b.earning)
+                    } else if (sortBy == 'earning' && order == 'desc') {
+                        resultArray.sort((a, b) => b.earning - a.earning)
+                    }
+
+                    if (req.query.query) {
+                        const regex = new RegExp(req.query.query, 'i');
+                        filteredArray = resultArray.filter(item => regex.test(item.monthly))
+                    } else {
+                        filteredArray = [...resultArray]
+                    }
+
+                    console.log(resultArray.slice(offset, offset + limit));
+
+                    const totalPages = Math.ceil(filteredArray.length / limit)
+                    const totalData = filteredArray.length
+
+                    db.query(sqlCustomer, [...values], (err, dataCustomer) => {
+                        if (err) {
+                            console.error(err);
+                        }
+
+                        console.log('Data Rows Customer')
+                        console.log(dataCustomer.rows)
+
+                        let totalSales = 0
+
+                        dataCustomer.rows.forEach((item) => {
+                            totalSales += parseInt(item.sales_count)
+                        })
+
+                        res.status(200).json({
+                            data: filteredArray.slice(offset, offset + limit),
+                            rawData: rawArray,
+                            dataCustomer: dataCustomer.rows,
+                            totalSales,
+                            totalPages,
+                            totalData,
+                            limit,
+                            page
+                        })
                     })
                 })
+
             })
         } catch (err) {
             res.status(500).json({ message: "error ambil data" })
@@ -278,6 +360,7 @@ module.exports = function (db) {
         if (req.query.startDate || req.query.endDate) {
             if (req.query.startDate && req.query.endDate) {
                 let endDate = new Date(req.query.endDate)
+                endDate.setDate(endDate.getDate() + 1)
                 wheres.push(`time BETWEEN $${count++} AND $${count++}`)
                 wheresCustomer.push(`s.time BETWEEN $${countCustomer++} AND $${countCustomer++}`)
                 values.push(req.query.startDate);
@@ -290,6 +373,7 @@ module.exports = function (db) {
             }
             else if (req.query.endDate) {
                 let endDate = new Date(req.query.endDate)
+                endDate.setDate(endDate.getDate() + 1)
                 wheres.push(`time <= $${count++}`)
                 wheresCustomer.push(`s.time <= $${countCustomer++}`)
                 values.push(endDate);
