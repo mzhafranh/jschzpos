@@ -21,6 +21,9 @@
                                 <!-- Page Heading -->
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                                     <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+                                    <a href="/data/csv" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="csvLink">
+                                        <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
+                                    </a>
                                 </div>
 
                                 <!-- Content Row -->
@@ -344,6 +347,16 @@
                 query: ''
             }
 
+            var readParamsCSV = {
+                page: 1,
+                totalPages: 1,
+                limit: 3,
+                sortBy: "date",
+                order: "asc",
+                endDate: '',
+                startDate: '',
+                query: ''
+            }
 
             function formatCurrency(value) {
                 const formatter = new Intl.NumberFormat('id-ID', {
@@ -389,7 +402,7 @@
             var myLineChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan 24','Feb 24', 'Mar 24', 'Apr 24'],
+                    labels: ['Jan 24', 'Feb 24', 'Mar 24', 'Apr 24'],
                     datasets: [{
                         label: "Earnings",
                         lineTension: 0.3,
@@ -510,7 +523,6 @@
                 },
             });
 
-
             const readData = (params) => {
                 var chartLabels = []
                 var chartData = []
@@ -540,7 +552,7 @@
                     myLineChart.update()
 
                     myPieChart.data.labels = chartCustomerLabel
-                    myPieChart.data.datasets[0].data = chartCustomerSales                    
+                    myPieChart.data.datasets[0].data = chartCustomerSales
                     myPieChart.update()
 
                     let monthlyThead = document.getElementById('monthlyThead')
@@ -737,11 +749,14 @@
             document.getElementById('dashboardForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 readParams.startDate = document.getElementById('startDate').value
+                readParamsCSV.startDate = document.getElementById('startDate').value
                 readParams.endDate = document.getElementById('endDate').value
-                console.log(readParams)
+                readParamsCSV.endDate = document.getElementById('endDate').value
+                const link = document.getElementById('csvLink')
+                link.href = `http://localhost:3000/data/csv/?${new URLSearchParams(readParamsCSV).toString()}`
                 readData(readParams)
             });
-
+            
         </script>
     </body>
 

@@ -1,8 +1,10 @@
 var express = require('express');
 var router = express.Router();
+const csv = require('csv');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 var path = require('path');
+
 
 /* GET home page. */
 module.exports = function (db) {
@@ -188,7 +190,7 @@ module.exports = function (db) {
                     resultArray.sort((a, b) => b.earning - a.earning)
                 }
 
-                if (req.query.query){
+                if (req.query.query) {
                     const regex = new RegExp(req.query.query, 'i');
                     filteredArray = resultArray.filter(item => regex.test(item.monthly))
                 } else {
@@ -256,6 +258,151 @@ module.exports = function (db) {
         //     res.status(500).json({ message: "error ambil data" })
         // }
 
+    })
+
+    router.get('/csv', (req, res) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
+        const wheres = []
+        const wheresCustomer = []
+        const values = []
+        var count = 1;
+        var countCustomer = 1;
+        var sortBy = req.query.sortBy == undefined ? `date` : req.query.sortBy;
+        var order = req.query.order == undefined ? `asc` : req.query.order;
+
+        // console.log('Query: ' + req.query)
+        // console.log('Filter: ' + filter)
+
+        if (req.query.startDate || req.query.endDate) {
+            if (req.query.startDate && req.query.endDate) {
+                let endDate = new Date(req.query.endDate)
+                wheres.push(`time BETWEEN $${count++} AND $${count++}`)
+                wheresCustomer.push(`s.time BETWEEN $${countCustomer++} AND $${countCustomer++}`)
+                values.push(req.query.startDate);
+                values.push(endDate);
+            }
+            else if (req.query.startDate) {
+                wheres.push(`time >= $${count++}`)
+                wheresCustomer.push(`s.time >= $${countCustomer++}`)
+                values.push(req.query.startDate);
+            }
+            else if (req.query.endDate) {
+                let endDate = new Date(req.query.endDate)
+                wheres.push(`time <= $${count++}`)
+                wheresCustomer.push(`s.time <= $${countCustomer++}`)
+                values.push(endDate);
+            }
+        }
+
+        let sql = `
+                    SELECT 
+                        DATE_TRUNC('month', time) AS month,
+                        'Purchases' AS type,
+                        SUM(totalsum) AS total
+                    FROM purchases            
+        `;
+        let sqlCustomer = `
+                    SELECT 
+                        CASE 
+                            WHEN c.customerid = 1 THEN c.customerid
+                            ELSE 2
+                        END AS customer_group,
+                        CASE 
+                            WHEN c.customerid = 1 THEN 'Direct'
+                            ELSE 'Customer' 
+                        END AS customer_name,
+                        COUNT(s.invoice) AS sales_count
+                    FROM 
+                        customers c
+                    LEFT JOIN 
+                        sales s ON c.customerid = s.customer
+        `
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+            sqlCustomer += ` WHERE ${wheresCustomer.join(' AND ')}`
+        }
+        sql += `
+                    GROUP BY month
+
+                    UNION ALL
+
+                    SELECT 
+                        DATE_TRUNC('month', time) AS month,
+                        'Sales' AS type,
+                        SUM(totalsum) AS total
+                    FROM sales
+        `
+        sqlCustomer += `
+                    GROUP BY 
+                        customer_group, customer_name
+                    ORDER BY 
+                        sales_count DESC;
+
+        `
+        if (wheres.length > 0) {
+            sql += ` WHERE ${wheres.join(' AND ')}`
+        }
+        sql += `
+                    GROUP BY month
+                    ORDER BY month;
+        `
+        console.log('SQL: ' + sql)
+        console.log('SQL Customer: ' + sqlCustomer)
+        console.log(values)
+
+        try {
+            db.query(sql, [...values], (err, data) => {
+                if (err) {
+                    console.error(err);
+                }
+                console.log('Data Rows Dashboard')
+                console.log(data.rows)
+
+                const monthlyData = {};
+
+                data.rows.forEach((item) => {
+                    // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
+                    const date = new Date(item.month);
+                    const month = new Intl.DateTimeFormat('en-US', {
+                        month: 'short',
+                        year: '2-digit'
+                    }).format(date);
+
+                    if (!monthlyData[month]) {
+                        monthlyData[month] = { date, expense: 0, revenue: 0 };
+                    }
+
+                    if (item.type === 'Purchases') {
+                        monthlyData[month].expense += parseFloat(item.total);
+                    } else if (item.type === 'Sales') {
+                        monthlyData[month].revenue += parseFloat(item.total);
+                    }
+                });
+
+                const formattedData = Object.entries(monthlyData).map(([month, values]) => ({
+                    Month: month,
+                    Expense: values.expense,
+                    Revenue: values.revenue,
+                    Earning: values.revenue - values.expense
+                }));
+
+                res.setHeader('Content-Type', 'text/csv');
+                res.setHeader('Content-Disposition', 'attachment; filename="report.csv"');
+
+                csv.stringify(formattedData, { header: true }, (err, output) => {
+                    if (err) {
+                        console.error('Error generating CSV:', err);
+                        res.status(500).send('Server Error');
+                    } else {
+                        res.send(output);
+                    }
+                });
+            })
+        } catch (err) {
+            res.status(500).json({ message: "error ambil data" })
+        }
     })
 
     router.get('/users', (req, res,) => {
@@ -807,7 +954,7 @@ module.exports = function (db) {
                     sql += ` WHERE ${wheres.join(' AND ')}`
                 }
                 if (sortBy == 'invoice') {
-                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-(\\d{8})-(\\d+)') AS DATE) ${reverseorder},
+                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-(\\d{8})-(\\d+)') AS DATE) ${order},
                                       CAST(SUBSTRING(invoice FROM 'INV-\\d{8}-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
                 } else {
                     sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
@@ -1194,7 +1341,7 @@ module.exports = function (db) {
                     sql += ` WHERE ${wheres.join(' AND ')}`
                 }
                 if (sortBy == 'invoice') {
-                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-PENJ(\\d{8})-(\\d+)') AS DATE) ${reverseorder},
+                    sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-PENJ(\\d{8})-(\\d+)') AS DATE) ${order},
                                       CAST(SUBSTRING(invoice FROM 'INV-PENJ(\\d{8})-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
                 } else {
                     sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
