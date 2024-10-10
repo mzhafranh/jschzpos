@@ -344,11 +344,6 @@
                 query: ''
             }
 
-            var dataArray = []
-            var chartLabels = []
-            var chartData = []
-            var chartCustomerLabel = []
-            var chartCustomerSales = []
 
             function formatCurrency(value) {
                 const formatter = new Intl.NumberFormat('id-ID', {
@@ -361,6 +356,11 @@
             }
 
             const readData = (params) => {
+                var chartLabels = []
+                var chartData = []
+                var chartCustomerLabel = []
+                var chartCustomerSales = []
+
                 fetch(`http://localhost:3000/data/?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -369,9 +369,7 @@
                 }).then((response) => {
                     let newParams = { ...params };
 
-                    dataArray = [...response.rawData]
-
-                    dataArray.forEach((item, index) => {
+                    response.rawData.forEach((item, index) => {
                         chartLabels[index] = (item.monthly)
                         chartData[index] = (item.earning)
                     })
