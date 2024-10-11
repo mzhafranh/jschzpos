@@ -80,14 +80,6 @@ module.exports = function (db) {
             }
         }
 
-        // let sql = `
-        //             SELECT 
-        //                 DATE_TRUNC('month', time) AS month,
-        //                 'Purchases' AS type,
-        //                 SUM(totalsum) AS total
-        //             FROM purchases            
-        // `;
-
         let sqlPurchase = `
                     SELECT 
                         TO_CHAR(time, 'YYYY-MM') AS month,
@@ -135,17 +127,6 @@ module.exports = function (db) {
                     ORDER BY 
                         month;
         `
-        // sql += `
-        //             GROUP BY month
-
-        //             UNION ALL
-
-        //             SELECT 
-        //                 DATE_TRUNC('month', time) AS month,
-        //                 'Sales' AS type,
-        //                 SUM(totalsum) AS total
-        //             FROM sales
-        // `
         sqlCustomer += `
                     GROUP BY 
                         customer_group, customer_name
@@ -153,13 +134,6 @@ module.exports = function (db) {
                         sales_count DESC;
 
         `
-        // if (wheres.length > 0) {
-        //     sql += ` WHERE ${wheres.join(' AND ')}`
-        // }
-        // sql += `
-        //             GROUP BY month
-        //             ORDER BY month;
-        // `
         console.log('SQL Purchase: ' + sqlPurchase)
         console.log('SQL Sale: ' + sqlSale)
         console.log('SQL Customer: ' + sqlCustomer)
@@ -169,14 +143,14 @@ module.exports = function (db) {
         var dataSale = []
 
         try {
-            db.query(sqlPurchase, [...values], (err, dataP) => {
+            db.query(sqlPurchase, values, (err, dataP) => {
                 if (err) {
                     console.error(err);
                 }
                 dataPurchase = [...dataP.rows]
                 console.log(dataPurchase)
 
-                db.query(sqlSale, [...values], (err, dataS) => {
+                db.query(sqlSale, values, (err, dataS) => {
                     if (err) {
                         console.error(err);
                     }
@@ -186,7 +160,6 @@ module.exports = function (db) {
                     const monthlyData = {};
 
                     dataPurchase.forEach((item) => {
-                        // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
                         const date = new Date(item.month);
                         const month = new Intl.DateTimeFormat('en-US', {
                             month: 'short',
@@ -201,7 +174,6 @@ module.exports = function (db) {
                     });
 
                     dataSale.forEach((item) => {
-                        // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
                         const date = new Date(item.month);
                         const month = new Intl.DateTimeFormat('en-US', {
                             month: 'short',
@@ -214,26 +186,7 @@ module.exports = function (db) {
                         monthlyData[month].revenue += parseFloat(item.total_sales);
                     });
 
-                    // data.rows.forEach((item) => {
-                    //     // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
-                    //     const date = new Date(item.month);
-                    //     const month = new Intl.DateTimeFormat('en-US', {
-                    //         month: 'short',
-                    //         year: '2-digit'
-                    //     }).format(date);
-
-                    //     if (!monthlyData[month]) {
-                    //         monthlyData[month] = { date, expense: 0, revenue: 0 };
-                    //     }
-
-                    //     if (item.type === 'Purchases') {
-                    //         monthlyData[month].expense += parseFloat(item.total);
-                    //     } else if (item.type === 'Sales') {
-                    //         monthlyData[month].revenue += parseFloat(item.total);
-                    //     }
-                    // });
-
-                    console.log(monthlyData)
+                    // console.log(monthlyData)
 
                     const resultArray = Object.entries(monthlyData).map(([month, values]) => ({
                         date: values.date,
@@ -314,32 +267,6 @@ module.exports = function (db) {
             res.status(500).json({ message: "error ambil data" })
         }
 
-        // try {
-        //     db.query(sqlCount, values, (err, data) => {
-        //         if (err) {
-        //             console.error(err);
-        //         }
-        //         const totalPages = Math.ceil(data.rows[0].total / limit)
-        //         const totalData = data.rows[0].total
-        //         if (wheres.length > 0) {
-        //             sql += ` WHERE ${wheres.join(' AND ')}`
-        //         }
-        //         sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
-        //         console.log('SQL: ' + sql)
-        //         console.log([...values, limit, offset])
-        //         db.query(sql, [...values, limit, offset], (err, data) => {
-        //             if (err) {
-        //                 console.error(err);
-        //             }
-        //             res.status(200).json({
-        //                 data: data.rows
-        //             })
-        //         })
-        //     })
-        // } catch (err) {
-        //     res.status(500).json({ message: "error ambil data" })
-        // }
-
     })
 
     router.get('/csv', (req, res) => {
@@ -361,10 +288,14 @@ module.exports = function (db) {
             if (req.query.startDate && req.query.endDate) {
                 let endDate = new Date(req.query.endDate)
                 endDate.setDate(endDate.getDate() + 1)
+                let year = endDate.getFullYear();
+                let month = String(endDate.getMonth() + 1).padStart(2, '0');
+                let day = String(endDate.getDate()).padStart(2, '0');
+                let formattedEndDate = `${year}-${month}-${day}`
                 wheres.push(`time BETWEEN $${count++} AND $${count++}`)
                 wheresCustomer.push(`s.time BETWEEN $${countCustomer++} AND $${countCustomer++}`)
                 values.push(req.query.startDate);
-                values.push(endDate);
+                values.push(formattedEndDate);
             }
             else if (req.query.startDate) {
                 wheres.push(`time >= $${count++}`)
@@ -374,19 +305,30 @@ module.exports = function (db) {
             else if (req.query.endDate) {
                 let endDate = new Date(req.query.endDate)
                 endDate.setDate(endDate.getDate() + 1)
+                let year = endDate.getFullYear();
+                let month = String(endDate.getMonth() + 1).padStart(2, '0');
+                let day = String(endDate.getDate()).padStart(2, '0');
+                let formattedEndDate = `${year}-${month}-${day}`
                 wheres.push(`time <= $${count++}`)
                 wheresCustomer.push(`s.time <= $${countCustomer++}`)
-                values.push(endDate);
+                values.push(formattedEndDate);
             }
         }
 
-        let sql = `
+        let sqlPurchase = `
                     SELECT 
-                        DATE_TRUNC('month', time) AS month,
-                        'Purchases' AS type,
-                        SUM(totalsum) AS total
-                    FROM purchases            
-        `;
+                        TO_CHAR(time, 'YYYY-MM') AS month,
+                        SUM(totalsum) AS total_purchases
+                    FROM 
+                        purchases
+        `
+        let sqlSale = `
+                    SELECT 
+                        TO_CHAR(time, 'YYYY-MM') AS month,
+                        SUM(totalsum) AS total_sales
+                    FROM 
+                        sales
+        `
         let sqlCustomer = `
                     SELECT 
                         CASE 
@@ -404,19 +346,21 @@ module.exports = function (db) {
                         sales s ON c.customerid = s.customer
         `
         if (wheres.length > 0) {
-            sql += ` WHERE ${wheres.join(' AND ')}`
+            sqlPurchase += ` WHERE ${wheres.join(' AND ')}`
+            sqlSale += ` WHERE ${wheres.join(' AND ')}`
             sqlCustomer += ` WHERE ${wheresCustomer.join(' AND ')}`
         }
-        sql += `
-                    GROUP BY month
-
-                    UNION ALL
-
-                    SELECT 
-                        DATE_TRUNC('month', time) AS month,
-                        'Sales' AS type,
-                        SUM(totalsum) AS total
-                    FROM sales
+        sqlPurchase += `
+                    GROUP BY 
+                        TO_CHAR(time, 'YYYY-MM')
+                    ORDER BY 
+                        month;
+        `
+        sqlSale += `
+                    GROUP BY 
+                        TO_CHAR(time, 'YYYY-MM')
+                    ORDER BY 
+                        month;
         `
         sqlCustomer += `
                     GROUP BY 
@@ -425,64 +369,79 @@ module.exports = function (db) {
                         sales_count DESC;
 
         `
-        if (wheres.length > 0) {
-            sql += ` WHERE ${wheres.join(' AND ')}`
-        }
-        sql += `
-                    GROUP BY month
-                    ORDER BY month;
-        `
-        console.log('SQL: ' + sql)
+        console.log('SQL Purchase: ' + sqlPurchase)
+        console.log('SQL Sale: ' + sqlSale)
         console.log('SQL Customer: ' + sqlCustomer)
         console.log(values)
 
+        var dataPurchase = []
+        var dataSale = []
+
         try {
-            db.query(sql, [...values], (err, data) => {
+            db.query(sqlPurchase, values, (err, dataP) => {
                 if (err) {
                     console.error(err);
                 }
-                console.log('Data Rows Dashboard')
-                console.log(data.rows)
+                dataPurchase = [...dataP.rows]
+                console.log(dataPurchase)
 
-                const monthlyData = {};
-
-                data.rows.forEach((item) => {
-                    // const month = item.month.toISOString().split('T')[0].substring(0, 7); // Get YYYY-MM
-                    const date = new Date(item.month);
-                    const month = new Intl.DateTimeFormat('en-US', {
-                        month: 'short',
-                        year: '2-digit'
-                    }).format(date);
-
-                    if (!monthlyData[month]) {
-                        monthlyData[month] = { date, expense: 0, revenue: 0 };
-                    }
-
-                    if (item.type === 'Purchases') {
-                        monthlyData[month].expense += parseFloat(item.total);
-                    } else if (item.type === 'Sales') {
-                        monthlyData[month].revenue += parseFloat(item.total);
-                    }
-                });
-
-                const formattedData = Object.entries(monthlyData).map(([month, values]) => ({
-                    Month: month,
-                    Expense: values.expense,
-                    Revenue: values.revenue,
-                    Earning: values.revenue - values.expense
-                }));
-
-                res.setHeader('Content-Type', 'text/csv');
-                res.setHeader('Content-Disposition', 'attachment; filename="report.csv"');
-
-                csv.stringify(formattedData, { header: true }, (err, output) => {
+                db.query(sqlSale, values, (err, dataS) => {
                     if (err) {
-                        console.error('Error generating CSV:', err);
-                        res.status(500).send('Server Error');
-                    } else {
-                        res.send(output);
+                        console.error(err);
                     }
-                });
+                    dataSale = [...dataS.rows]
+                    console.log(dataSale)
+
+                    const monthlyData = {};
+
+                    dataPurchase.forEach((item) => {
+                        const date = new Date(item.month);
+                        const month = new Intl.DateTimeFormat('en-US', {
+                            month: 'short',
+                            year: '2-digit'
+                        }).format(date);
+
+                        if (!monthlyData[month]) {
+                            monthlyData[month] = { date, expense: 0, revenue: 0 };
+                        }
+
+                        monthlyData[month].expense += parseFloat(item.total_purchases);
+                    });
+
+                    dataSale.forEach((item) => {
+                        const date = new Date(item.month);
+                        const month = new Intl.DateTimeFormat('en-US', {
+                            month: 'short',
+                            year: '2-digit'
+                        }).format(date);
+
+                        if (!monthlyData[month]) {
+                            monthlyData[month] = { date, expense: 0, revenue: 0 };
+                        }
+                        monthlyData[month].revenue += parseFloat(item.total_sales);
+                    });
+
+                    // console.log(monthlyData)
+
+                    const formattedData = Object.entries(monthlyData).map(([month, values]) => ({
+                        Month: month,
+                        Expense: values.expense,
+                        Revenue: values.revenue,
+                        Earning: values.revenue - values.expense
+                    }));
+    
+                    res.setHeader('Content-Type', 'text/csv');
+                    res.setHeader('Content-Disposition', 'attachment; filename="report.csv"');
+    
+                    csv.stringify(formattedData, { header: true }, (err, output) => {
+                        if (err) {
+                            console.error('Error generating CSV:', err);
+                            res.status(500).send('Server Error');
+                        } else {
+                            res.send(output);
+                        }
+                    });
+                })
             })
         } catch (err) {
             res.status(500).json({ message: "error ambil data" })
