@@ -24,6 +24,7 @@ async function main() {
 
     var indexRouter = require('./routes/index')(db);
     var dataRouter = require('./routes/data')(db);
+    var usersRouter = require('./routes/users')(db);
 
     var app = express();
 
@@ -48,8 +49,7 @@ async function main() {
 
     app.use('/', indexRouter);
     app.use('/data', dataRouter);
-
-
+    app.use('/users', usersRouter);
 
     var debug = require('debug')('pos:server');
     var http = require('http');

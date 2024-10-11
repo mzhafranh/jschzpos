@@ -1587,6 +1587,46 @@ module.exports = function (db) {
         }
     })
 
+    router.get('/profile/', (req, res) => {
+        let userId = req.session.user.userid
+        try {
+            db.query('SELECT * FROM users WHERE userid = $1', [userId], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                res.status(200).json({
+                    data: data.rows
+                })
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error ambil data" })
+        }
+    })
+
+    router.put('/profile/', (req, res) => {
+        try {
+            let userId = req.session.user.userid
+            const { email, name } = req.body
+            db.query('UPDATE users SET email = $1, name = $2 WHERE userid = $3', [email, name, userId], (err, data) => {
+                if (err) {
+                    console.error(err)
+                }
+                req.session.user.email = email;
+                req.session.user.name = name;
+                req.session.save((err) => {
+                    if (err) {
+                      return res.status(500).send('Error saving session');
+                    }
+                    res.status(200).json({ message: "ok" })
+                  });
+            })
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ message: "error save data" })
+        }
+    })
+
     router.post('/add', (req, res) => {
         add(req.body.id, req.body.string, parseInt(req.body.integer), parseFloat(req.body.float), req.body.date, req.body.boolean, (err) => {
             if (err) {
