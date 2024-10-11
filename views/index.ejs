@@ -21,7 +21,8 @@
                                 <!-- Page Heading -->
                                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                                     <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                                    <a href="/data/csv" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="csvLink">
+                                    <a href="/data/csv"
+                                        class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="csvLink">
                                         <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
                                     </a>
                                 </div>
@@ -641,34 +642,94 @@
                     document.getElementById('dataTable_info').innerText = showEntryText
 
                     let paging = '';
+                    let maxPagesToShow = 5;
+                    let currentPage = params.page;
+                    let totalPages = response.totalPages;
 
-                    if (!(params.page == 1)) {
-                        newParams.page = params.page - 1;
-                        paging += `<li class="paginate_button page-item previous enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Previous</span></button></li>`
-                    } else {
-                        paging += `<li class="paginate_button page-item previous disabled"><span class="text-gray-600 page-link" aria-hidden="true">Previous</span></li>`
-                    }
-
-                    newParams.page = 1;
-                    for (let i = 1; i <= response.totalPages; i++) {
-                        if (response.page == i) {
-                            newParams.page = i;
-                            paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                    if (totalPages > maxPagesToShow) {
+                        if (currentPage > 1) {
+                            newParams.page = currentPage - 1;
+                            paging += `<li class="paginate_button page-item previous enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Previous</span></button></li>`;
+                        } else {
+                            paging += `<li class="paginate_button page-item previous disabled"><span class="text-gray-600 page-link" aria-hidden="true">Previous</span></li>`;
                         }
-                        else {
+
+                        newParams.page = 1;
+
+                        // Show the first page
+                        if (currentPage == 1) {
+                            paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>1</button></li>`;
+                        } else {
+                            paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>1</button></li>`;
+                        }
+
+                        // Add ellipsis if there are too many pages before the current one
+                        if (currentPage > 3) {
+                            paging += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                        }
+
+                        // Show pages around the current page
+                        let startPage = Math.max(2, currentPage - 1); // Start from page 2, since 1 is always shown
+                        let endPage = Math.min(totalPages - 1, currentPage + 1); // Ensure not to go beyond the second last page
+
+                        for (let i = startPage; i <= endPage; i++) {
                             newParams.page = i;
-                            paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                            if (currentPage == i) {
+                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`;
+                            } else {
+                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`;
+                            }
+                        }
+
+                        // Add ellipsis if there are too many pages after the current one
+                        if (currentPage < totalPages - 2) {
+                            paging += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                        }
+
+                        // Show the last page
+                        if (currentPage == totalPages) {
+                            newParams.page = totalPages;
+                            paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${totalPages}</button></li>`;
+                        } else {
+                            newParams.page = totalPages;
+                            paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${totalPages}</button></li>`;
+                        }
+
+                        if (currentPage < totalPages) {
+                            newParams.page = currentPage + 1;
+                            paging += `<li class="paginate_button page-item next enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Next</span></button></li>`;
+                        } else {
+                            paging += `<li class="paginate_button page-item next disabled"><span class="text-gray-600 page-link" aria-hidden="true">Next</span></li>`;
+                        }
+                    } else {
+                        if (!(params.page == 1)) {
+                            newParams.page = params.page - 1;
+                            paging += `<li class="paginate_button page-item previous enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Previous</span></button></li>`
+                        } else {
+                            paging += `<li class="paginate_button page-item previous disabled"><span class="text-gray-600 page-link" aria-hidden="true">Previous</span></li>`
+                        }
+
+                        newParams.page = 1;
+                        for (let i = 1; i <= response.totalPages; i++) {
+                            if (response.page == i) {
+                                newParams.page = i;
+                                paging += `<li class="page-item active"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                            }
+                            else {
+                                newParams.page = i;
+                                paging += `<li class="page-item"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'>${i}</button></li>`
+                            }
+                        }
+
+                        if (!(params.page == response.totalPages)) {
+                            newParams.page = params.page + 1
+                            paging += `<li class="paginate_button page-item next enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Next</span></button></li>`
+                        } else {
+                            paging += `<li class="paginate_button page-item next disabled"><span class="text-gray-600 page-link" aria-hidden="true">Next</span></li>`
+
                         }
                     }
-
-                    if (!(params.page == response.totalPages)) {
-                        newParams.page = params.page + 1
-                        paging += `<li class="paginate_button page-item next enabled"><button type="button" class="page-link" onClick='readData(${JSON.stringify(newParams)})'><span class="text-primary" aria-hidden="true">Next</span></button></li>`
-                    } else {
-                        paging += `<li class="paginate_button page-item next disabled"><span class="text-gray-600 page-link" aria-hidden="true">Next</span></li>`
-
-                    }
-                    document.querySelector('.pagination').innerHTML = paging
+                    document.querySelector('.pagination').innerHTML = paging;
                 })
                     .catch((err) => {
                         console.error(err);
@@ -756,7 +817,7 @@
                 link.href = `http://localhost:3000/data/csv/?${new URLSearchParams(readParamsCSV).toString()}`
                 readData(readParams)
             });
-            
+
         </script>
     </body>
 
