@@ -131,7 +131,7 @@ module.exports = function (db) {
                     GROUP BY 
                         customer_group, customer_name
                     ORDER BY 
-                        sales_count DESC;
+                        customer_group ASC;
 
         `
         console.log('SQL Purchase: ' + sqlPurchase)
