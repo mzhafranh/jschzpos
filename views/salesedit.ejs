@@ -441,6 +441,23 @@
                 }
             }
 
+            const submitSale = async () => {
+                console.log('Submit Purchase')
+                const formData = new FormData(addSalesForm);
+                try {
+                    const response = await fetch('http://localhost:3000/data/saleitems/add', {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    if (!response.ok) {
+                        throw new Error('Failed to submit purchase');
+                    }
+                    console.log('Purchase submitted successfully');
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+
             const refreshData = () => {
                 console.log("Refresh Data")
                 // let invoice = document.getElementById("invoice").value

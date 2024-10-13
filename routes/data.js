@@ -1185,6 +1185,7 @@ module.exports = function (db) {
     })
 
     router.get('/purchases/edit/:invoice', (req, res) => {
+
         console.log('sampai get purchase edit')
         try {
             let invoice = req.params.invoice
@@ -1359,7 +1360,7 @@ module.exports = function (db) {
         const values = []
         var count = 1;
         var sortBy = req.query.sortBy == '' ? `invoice` : req.query.sortBy;
-        var order = req.query.order == '' ? `asc` : req.query.order;
+        var order = req.query.order == '' ? `desc` : req.query.order;
         var reverseorder = order == 'asc' ? 'desc' : 'asc'
 
         console.log(req.query)
@@ -1583,7 +1584,8 @@ module.exports = function (db) {
                 if (err) {
                     console.error(err)
                 }
-                res.status(200).json({ message: "ok" })
+                console.log(data.rows)
+                res.status(200).json({ data: data.rows})
             })
         } catch (err) {
             console.log(err)
