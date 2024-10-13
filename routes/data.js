@@ -1011,6 +1011,8 @@ module.exports = function (db) {
                     // console.log(data.rows)
                     res.status(200).json({
                         data: data.rows,
+                        userRole: req.session.user.role,
+                        userId: req.session.user.userid,
                         totalData,
                         totalPages,
                         limit: limit,
@@ -1398,6 +1400,8 @@ module.exports = function (db) {
                     // console.log(data.rows)
                     res.status(200).json({
                         data: data.rows,
+                        userRole: req.session.user.role,
+                        userId: req.session.user.userid,
                         totalData,
                         totalPages,
                         limit: limit,

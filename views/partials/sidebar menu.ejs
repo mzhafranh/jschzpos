@@ -41,7 +41,7 @@
             <span>Sell</span></a>
     </li> -->
 
-    <% if (user.role == "admin") {%>
+    
 
     <!-- Divider -->
     <hr class="sidebar-divider">
@@ -50,6 +50,8 @@
     <div class="sidebar-heading">
         Master
     </div>
+
+    <% if (user.role == "admin") {%>
 
     <!-- Nav Item - Pages Collapse Menu -->
     <li class="nav-item <%= mode == 'goods' ? 'active' : ''%>">
@@ -68,6 +70,8 @@
         </div>
     </li>
 
+    <% } %>
+
     <!-- Nav Item - Charts -->
     <li class="nav-item <%= mode == 'suppliers' ? 'active' : ''%>">
         <a class="nav-link" href="/suppliers">
@@ -82,12 +86,16 @@
             <span>Customers</span></a>
     </li>
 
+    <% if (user.role == "admin") {%>
+
     <!-- Nav Item - Charts -->
     <li class="nav-item <%= mode == 'users' ? 'active' : ''%>">
         <a class="nav-link" href="/users">
             <i class="fa-solid fa-user"></i>
             <span>Users</span></a>
     </li>
+
+    <% } %>
 
     <!-- Divider -->
     <hr class="sidebar-divider">
@@ -112,48 +120,7 @@
             <span>Sales</span></a>
     </li>
 
-
-    <!-- Nav Item - Charts -->
-    <!-- <li class="nav-item <%= mode == 'inventory' ? 'active' : ''%>">
-        <a class="nav-link" href="/inventory">
-            <i class="fa-solid fa-boxes-stacked"></i>
-            <span>Inventory</span></a>
-    </li> -->
-
-    <!-- Nav Item - Charts -->
-    <!-- <li class="nav-item <%= mode == 'warehouse' ? 'active' : ''%>">
-        <a class="nav-link" href="/warehouse">
-            <i class="fa-solid fa-warehouse"></i>
-            <span>Warehouse</span></a>
-    </li> -->
-
-    <!-- Nav Item - Tables -->
-    <!-- <li class="nav-item <%= mode == 'supplier' ? 'active' : ''%>">
-        <a class="nav-link" href="/supplier">
-            <i class="fa-solid fa-truck-ramp-box"></i>
-            <span>Supplier</span></a>
-    </li> -->
-
-
-    <!-- Nav Item - Pages Collapse Menu -->
-    <!-- <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true"
-            aria-controls="collapsePages">
-            <i class="fa-solid fa-ellipsis"></i>
-            <span>Others</span>
-        </a>
-        <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Login Screens:</h6>
-                <a class="collapse-item" href="/users">Users</a>
-                <a class="collapse-item" href="/unit">Unit</a>
-                <div class="collapse-divider"></div>
-            </div>
-        </div>
-    </li> -->
-
-    <% } %>
-
+    
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 

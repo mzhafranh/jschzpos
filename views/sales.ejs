@@ -287,11 +287,28 @@
                                 <td>${formatCurrency(item.pay)}</td>
                                 <td>${formatCurrency(item.change)}</td>
                                 <td>${item.name ? item.name : '-'}</td>
-                                <td><a href="/sales/edit/${item.invoice}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
-                                    <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
-                                    </td>
-                            </tr>
                             `
+                            if(response.userRole == 'op'){
+                                if (response.userId == item.operator){
+                                    htmlTbody += `
+                                    <td><a href="/sales/edit/${item.invoice}" class="btn btn-success btn-circle"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
+                                        </td>
+                                    </tr>`
+                                } else {
+                                    htmlTbody += `
+                                    <td><button type="button" class="btn btn-success btn-circle" style="opacity:0.5;" disabled><i class="fa-solid fa-pen-to-square" disabled></i></button>
+                                        <button type="button" class="btn btn-danger btn-circle" style="opacity:0.5;" disabled><i class="fa-solid fa-trash-can"></i></button>
+                                        </td>
+                                    </tr>`
+                                }
+                            } else {
+                                htmlTbody += `
+                                    <td><a href="/sales/edit/${item.invoice}" class="btn btn-success btn-circle"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
+                                        </td>
+                                </tr>`
+                            }
                         })
                         document.querySelector('table tbody').innerHTML = htmlTbody
 

@@ -38,6 +38,9 @@ module.exports = function (db) {
     })
 
     router.get('/', helpers.isLoggedIn, function (req, res, next) {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
 
         const mode = 'dashboard'
         res.render('index', { mode, user: req.session.user })
@@ -90,7 +93,7 @@ module.exports = function (db) {
                     res.redirect('/')
                 }
                 if (req.session.user.role == "op") {
-                    res.redirect('/sell')
+                    res.redirect('/sales')
                 }
             });
         })
@@ -98,48 +101,84 @@ module.exports = function (db) {
 
 
     router.get('/users', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         const mode = 'users'
         res.render('users', { mode, user: req.session.user })
     })
 
     router.get('/users/add', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         const mode = 'users'
         res.render('usersadd', { mode, user: req.session.user })
     })
 
     router.get('/users/edit/:id', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         let userId = req.params.id
         const mode = 'users'
         res.render('usersedit', { mode, userId, user: req.session.user })
     })
 
     router.get('/units', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         const mode = 'goods'
         res.render('units', { mode, user: req.session.user })
     })
 
     router.get('/units/add', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         const mode = 'goods'
         res.render('unitsadd', { mode, user: req.session.user })
     })
 
     router.get('/units/edit/:id', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         let unitId = req.params.id
         const mode = 'goods'
         res.render('unitsedit', { mode, unitId, user: req.session.user })
     })
 
     router.get('/goods', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         const mode = 'goods'
         res.render('goods', { mode, user: req.session.user })
     })
 
     router.get('/goods/add', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         const mode = 'goods'
         res.render('goodsadd', { mode, user: req.session.user })
     })
 
     router.get('/goods/edit/:barcode', helpers.isLoggedIn, (req, res) => {
+        if(req.session.user.role == 'op'){
+            res.redirect('/sales')
+        }
+
         let barcode = req.params.barcode
         const mode = 'goods'
         res.render('goodsedit', { mode, barcode, user: req.session.user })
@@ -209,114 +248,9 @@ module.exports = function (db) {
         res.render('salesedit', { mode, invoice, user: req.session.user })
     })
 
-    router.get('/add', (req, res) => {
-        res.render('add')
-    })
-
-    router.post('/add', (req, res) => {
-        add(req.body.id, req.body.string, parseInt(req.body.integer), parseFloat(req.body.float), req.body.date, req.body.boolean, (err) => {
-            if (err) {
-                console.error(err);
-            }
-        })
-        res.redirect('/');
-    })
-
-    router.get('/delete/:id', (req, res) => {
-        const index = req.params.id
-        remove(index, (err) => {
-            if (err) {
-                console.error(err);
-            }
-        })
-        res.redirect('/');
-    })
-
-    router.get('/edit/:id', (req, res) => {
-        select(req.params.id, (err, data) => {
-            if (err) {
-                console.error(err);
-            }
-            res.render('edit', { item: data.rows[0] })
-        })
-    })
-
-    router.post('/edit/:id', (req, res) => {
-        update(req.body.id, req.params.id, req.body.string, parseInt(req.body.integer), parseFloat(req.body.float), req.body.date, req.body.boolean, (err) => {
-            if (err) {
-                console.error(err)
-            }
-            res.redirect('/');
-        })
-    })
-
-
-
     router.get('/blank', (req, res) => {
         const mode = 'blank'
         res.render('blank', { mode, user: req.session.user })
-    })
-
-    router.get('/buy', (req, res) => {
-        const mode = 'buy'
-        res.render('buy', { mode, user: req.session.user })
-    })
-
-    router.get('/sell', (req, res) => {
-        const mode = 'sell'
-        res.render('sell', { mode, user: req.session.user })
-    })
-
-    router.get('/warehouse', (req, res) => {
-        const mode = 'warehouse'
-        res.render('warehouse', { mode, user: req.session.user })
-    })
-
-    router.get('/inventory', (req, res) => {
-        const mode = 'inventory'
-        res.render('inventory', { mode, user: req.session.user })
-    })
-
-    router.get('/inventoryadd', (req, res) => {
-        const mode = 'inventory'
-        res.render('inventoryadd', { mode, user: req.session.user })
-    })
-
-    router.post('/inventoryadd', (req, res) => {
-        const mode = 'inventory'
-
-        console.log(req.files)
-
-        if (!req.files) {
-            return res.status(400).send("No files were uploaded.");
-        }
-
-        console.log(req.files.gambar_varian)
-        const file = req.files.gambar_varian;
-        const pathFile = __dirname + "/files/" + file.name;
-        const extensionName = path.extname(pathFile);
-        const allowedExtension = ['.png', '.jpg', '.jpeg'];
-
-        if (!allowedExtension.includes(extensionName)) {
-            return res.status(422).send("Invalid Image");
-        }
-
-        file.mv(pathFile, (err) => {
-            if (err) {
-                return res.status(500).send(err);
-            }
-            
-        });
-
-        const { id_varian, nama_varian, id_barang, stok_varian, harga_varian, id_satuan, id_gudang, harga_jual } = req.body
-
-        db.query('INSERT INTO varian VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [id_varian, nama_varian, id_barang, stok_varian, harga_varian, id_satuan, id_gudang, pathFile, harga_jual], (err) => {
-            if (err) return res.send(err)
-
-            res.redirect('inventory')
-        })
-
-        
     })
 
     router.get('/test', helpers.isLoggedIn, function (req, res, next) {

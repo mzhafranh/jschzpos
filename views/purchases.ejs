@@ -247,17 +247,35 @@
                             const minutes = String(date.getMinutes()).padStart(2, '0');
                             const seconds = String(date.getSeconds()).padStart(2, '0');
                             const formattedDate = `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
+
                             htmlTbody += `
                             <tr>
                                 <td>${item.invoice}</td>
                                 <td>${formattedDate}</td>
                                 <td>${formatCurrency(item.totalsum)}</td>
                                 <td>${item.name ? item.name : '-'}</td>
-                                <td><a href="/purchases/edit/${item.invoice}" class="btn btn-success btn-circle" ><i class="fa-solid fa-pen-to-square"></i></a>
-                                    <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
-                                    </td>
-                            </tr>
                             `
+                            if(response.userRole == 'op'){
+                                if (response.userId == item.operator){
+                                    htmlTbody += `
+                                    <td><a href="/purchases/edit/${item.invoice}" class="btn btn-success btn-circle"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
+                                        </td>
+                                    </tr>`
+                                } else {
+                                    htmlTbody += `
+                                    <td><button type="button" class="btn btn-success btn-circle" style="opacity:0.5;" disabled><i class="fa-solid fa-pen-to-square" disabled></i></button>
+                                        <button type="button" class="btn btn-danger btn-circle" style="opacity:0.5;" disabled><i class="fa-solid fa-trash-can"></i></button>
+                                        </td>
+                                    </tr>`
+                                }
+                            } else {
+                                htmlTbody += `
+                                    <td><a href="/purchases/edit/${item.invoice}" class="btn btn-success btn-circle"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>
+                                        </td>
+                                </tr>`
+                            }
                         })
                         document.querySelector('table tbody').innerHTML = htmlTbody
 
