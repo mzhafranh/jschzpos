@@ -6,7 +6,7 @@ const helpers = require('../helpers/util')
 var path = require('path');
 
 /* GET home page. */
-module.exports = function (db) {
+module.exports = function (db, io) {
     function add(id, string, integer, float, date, boolean, callback) {
         db.query('INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6)', [id, string, integer, float, date, boolean], (err) => {
             callback(err);

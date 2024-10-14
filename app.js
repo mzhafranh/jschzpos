@@ -6,6 +6,7 @@ var logger = require('morgan');
 var session = require('express-session')
 var flash = require('connect-flash');
 var fileUpload = require("express-fileupload");
+const { Server } = require('socket.io');
 
 
 async function main() {
@@ -20,11 +21,6 @@ async function main() {
       port: 5432,
     });
 
-    // the following code examples can be pasted here...
-
-    var indexRouter = require('./routes/index')(db);
-    var dataRouter = require('./routes/data')(db);
-    var usersRouter = require('./routes/users')(db);
 
     var app = express();
 
@@ -43,13 +39,11 @@ async function main() {
       saveUninitialized: true,
     }));
     app.use(flash());
-    app.use( fileUpload({
+    app.use(fileUpload({
       createParentPath: true,
-    }) );
+    }));
 
-    app.use('/', indexRouter);
-    app.use('/data', dataRouter);
-    app.use('/users', usersRouter);
+
 
     var debug = require('debug')('pos:server');
     var http = require('http');
@@ -66,6 +60,24 @@ async function main() {
      */
 
     var server = http.createServer(app);
+    const io = new Server(server);
+
+    var indexRouter = require('./routes/index')(db, io);
+    var dataRouter = require('./routes/data')(db, io);
+    var usersRouter = require('./routes/users')(db, io);
+
+    app.use('/', indexRouter);
+    app.use('/data', dataRouter);
+    app.use('/users', usersRouter);
+
+    io.on('connection', (socket) => {
+      console.log('A user connected');
+
+      // Handle disconnection
+      socket.on('disconnect', () => {
+        console.log('User disconnected');
+      });
+    });
 
     /**
      * Listen on provided port, on all network interfaces.

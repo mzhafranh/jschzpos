@@ -7,7 +7,7 @@ var path = require('path');
 
 
 /* GET home page. */
-module.exports = function (db) {
+module.exports = function (db, io) {
 
     router.get('/profile', helpers.isLoggedIn, (req, res) => {
         const mode = ''
