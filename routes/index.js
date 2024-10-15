@@ -38,13 +38,13 @@ module.exports = function (db, io) {
     })
 
     router.get('/', helpers.isLoggedIn, function (req, res, next) {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
 
         const mode = 'dashboard'
         res.render('index', { mode, user: req.session.user })
-        
+
     })
 
     router.get('/register', (req, res) => {
@@ -73,7 +73,7 @@ module.exports = function (db, io) {
 
     router.post('/login', (req, res) => {
         const { email, password } = req.body
-        
+
         db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
             // console.log(data)
             if (err) return res.send(err)
@@ -101,102 +101,93 @@ module.exports = function (db, io) {
 
 
     router.get('/users', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         const mode = 'users'
         res.render('users', { mode, user: req.session.user })
     })
 
     router.get('/users/add', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         const mode = 'users'
         res.render('usersadd', { mode, user: req.session.user })
     })
 
     router.get('/users/edit/:id', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         let userId = req.params.id
         const mode = 'users'
         res.render('usersedit', { mode, userId, user: req.session.user })
     })
 
     router.get('/units', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         const mode = 'goods'
         res.render('units', { mode, user: req.session.user })
     })
 
     router.get('/units/add', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         const mode = 'goods'
         res.render('unitsadd', { mode, user: req.session.user })
     })
 
     router.get('/units/edit/:id', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         let unitId = req.params.id
         const mode = 'goods'
         res.render('unitsedit', { mode, unitId, user: req.session.user })
     })
 
     router.get('/goods', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         const mode = 'goods'
         res.render('goods', { mode, user: req.session.user })
     })
 
     router.get('/goods/add', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         const mode = 'goods'
         res.render('goodsadd', { mode, user: req.session.user })
     })
 
     router.get('/goods/edit/:barcode', helpers.isLoggedIn, (req, res) => {
-        if(req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             res.redirect('/sales')
         }
-
         let barcode = req.params.barcode
         const mode = 'goods'
         res.render('goodsedit', { mode, barcode, user: req.session.user })
     })
 
     router.get('/suppliers', helpers.isLoggedIn, (req, res) => {
-        const mode = 'supplier'
+        const mode = 'suppliers'
         res.render('suppliers', { mode, user: req.session.user })
     })
 
     router.get('/suppliers/add', helpers.isLoggedIn, (req, res) => {
-        const mode = 'supplier'
+        const mode = 'suppliers'
         res.render('suppliersadd', { mode, user: req.session.user })
     })
 
     router.get('/suppliers/edit/:id', helpers.isLoggedIn, (req, res) => {
         let supplierId = req.params.id
-        const mode = 'supplier'
+        const mode = 'suppliers'
         res.render('suppliersedit', { mode, supplierId, user: req.session.user })
     })
 
@@ -220,18 +211,18 @@ module.exports = function (db, io) {
     router.get('/purchases/edit/:invoice', helpers.isLoggedIn, (req, res) => {
         let invoice = req.params.invoice
         const mode = 'purchases'
-        if (req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             db.query('SELECT * FROM purchases WHERE invoice = $1', [invoice], (err, data) => {
                 // console.log(data)
                 if (err) {
                     console.error(err)
                 }
-                if (data.rows[0].operator == req.session.user.userid){
+                if (data.rows[0].operator == req.session.user.userid) {
                     res.render('purchasesedit', { mode, invoice, user: req.session.user })
                 }
                 else {
                     res.redirect('/purchases')
-                }       
+                }
             })
         } else {
             res.render('purchasesedit', { mode, invoice, user: req.session.user })
@@ -267,21 +258,21 @@ module.exports = function (db, io) {
     router.get('/sales/edit/:invoice', helpers.isLoggedIn, (req, res) => {
         let invoice = req.params.invoice
         const mode = 'sales'
-        if (req.session.user.role == 'op'){
+        if (req.session.user.role == 'op') {
             db.query('SELECT * FROM sales WHERE invoice = $1', [invoice], (err, data) => {
                 // console.log(data)
                 if (err) {
                     console.error(err)
                 }
-                if (data.rows[0].operator == req.session.user.userid){
+                if (data.rows[0].operator == req.session.user.userid) {
                     res.render('salesedit', { mode, invoice, user: req.session.user })
                 }
                 else {
                     res.redirect('/sales')
-                }       
+                }
             })
         } else {
-        res.render('salesedit', { mode, invoice, user: req.session.user })
+            res.render('salesedit', { mode, invoice, user: req.session.user })
         }
     })
 
@@ -294,7 +285,7 @@ module.exports = function (db, io) {
 
         const mode = ''
         res.render('test', { mode, user: req.session.user })
-        
+
     })
 
     return router;
