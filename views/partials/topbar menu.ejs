@@ -101,7 +101,7 @@
 <% if (user.role == 'admin') {%>
 <script>
     const getAlerts = () => {
-        fetch(`http://localhost:3000/data/alerts`).then((response) => {
+        fetch(`/data/alerts`).then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -113,7 +113,7 @@
 
                 response.data.forEach((item, index) => {
                     htmlNotification += `
-                        <a class="dropdown-item d-flex align-items-center" href="#">
+                        <a class="dropdown-item d-flex align-items-center" href="/purchases/add/${item.barcode}">
                             <div class="mr-3">
                                 <div class="icon-circle bg-warning">
                                     <i class="fas fa-exclamation-triangle text-white"></i>

@@ -4,8 +4,6 @@ const csv = require('csv');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 var path = require('path');
-const { Socket } = require('socket.io');
-
 
 /* GET home page. */
 module.exports = function (db, io) {

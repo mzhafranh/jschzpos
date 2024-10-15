@@ -186,7 +186,7 @@ module.exports = function (db, io) {
 
     router.get('/suppliers', helpers.isLoggedIn, (req, res) => {
         const mode = 'supplier'
-        res.render('supplier', { mode, user: req.session.user })
+        res.render('suppliers', { mode, user: req.session.user })
     })
 
     router.get('/suppliers/add', helpers.isLoggedIn, (req, res) => {
@@ -206,8 +206,15 @@ module.exports = function (db, io) {
     })
 
     router.get('/purchases/add', helpers.isLoggedIn, (req, res) => {
+        let barcode = false
         const mode = 'purchases'
-        res.render('purchasesadd', { mode, user: req.session.user })
+        res.render('purchasesadd', { mode, user: req.session.user, barcode })
+    })
+
+    router.get('/purchases/add/:barcode', helpers.isLoggedIn, (req, res) => {
+        let barcode = req.params.barcode
+        const mode = 'purchases'
+        res.render('purchasesadd', { mode, user: req.session.user, barcode })
     })
 
     router.get('/purchases/edit/:invoice', helpers.isLoggedIn, (req, res) => {

@@ -179,7 +179,7 @@
 
 
             const getData = () => {
-                fetch(`http://localhost:3000/data/invoice`).then((response) => {
+                fetch(`/data/invoice`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -202,35 +202,48 @@
                     operator.value = `<%= user.userid %>`
                     operatorText.value = `<%= user.name %>`
                 }).then(() => {
-                    fetch(`http://localhost:3000/data/goods?${new URLSearchParams(readGoodsParams).toString()}`).then((response) => {
+                    fetch(`/data/goods?${new URLSearchParams(readGoodsParams).toString()}`).then((response) => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
                         return response.json();
                     }).then((response) => {
-                        let selectOptions = '<option value ="" disabled selected>--- Select Item ---</option>'
-                        response.data.forEach((item, index) => {
-                            selectOptions += `<option value ="${item.barcode}">${item.barcode} - ${item.name}</option>`
-                        })
-                        document.getElementById('itemcode').innerHTML = selectOptions
-                    }).then(() => {
-                        fetch(`http://localhost:3000/data/suppliers?${new URLSearchParams(readSuppliersParams).toString()}`).then((response) => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! Status: ${response.status}`);
-                            }
-                            return response.json();
-                        }).then((response) => {
-                            let selectOptions = '<option value ="" selected>--- Select Supplier ---</option>'
+                        <% if (barcode) {%>
+                            let selectOptions = '<option value ="" disabled>--- Select Item ---</option>'
                             response.data.forEach((item, index) => {
-                                selectOptions += `<option value ="${item.supplierid}">${item.name}</option>`
+                                if (item.barcode == <%= barcode%>){
+                                    selectOptions += `<option value ="${item.barcode}" selected>${item.barcode} - ${item.name}</option>`
+                                } else {
+                                    selectOptions += `<option value ="${item.barcode}">${item.barcode} - ${item.name}</option>`
+                                }
                             })
-                            document.getElementById('supplier').innerHTML = selectOptions
-                        })
-                    })
+                            document.getElementById('itemcode').innerHTML = selectOptions
+                        <% } else {%>
+                            let selectOptions = '<option value ="" disabled selected>--- Select Item ---</option>'
+                            response.data.forEach((item, index) => {
+                                selectOptions += `<option value ="${item.barcode}">${item.barcode} - ${item.name}</option>`
+                            })
+                            document.getElementById('itemcode').innerHTML = selectOptions
+                        <%}%>
+                    }).then(() => {
+                                    fetch(`/data/suppliers?${new URLSearchParams(readSuppliersParams).toString()}`).then((response) => {
+                                        if (!response.ok) {
+                                            throw new Error(`HTTP error! Status: ${response.status}`);
+                                        }
+                                        return response.json();
+                                    }).then((response) => {
+                                        let selectOptions = '<option value ="" selected>--- Select Supplier ---</option>'
+                                        response.data.forEach((item, index) => {
+                                            selectOptions += `<option value ="${item.supplierid}">${item.name}</option>`
+                                        })
+                                        document.getElementById('supplier').innerHTML = selectOptions
+                                    })
+                                })
                 })
             }
 
             getData()
+            
 
             const addPurchaseForm = document.getElementById('addPurchaseForm');
 
@@ -244,9 +257,9 @@
                 return formatter.format(value);
             }
 
-            document.getElementById('itemcode').addEventListener('change', function (event) {
-                let barcode = document.getElementById('itemcode').value
-                fetch(`http://localhost:3000/data/goods/edit/${barcode}`).then((response) => {
+            
+            const getItem = (barcode) => {
+                fetch(`/data/goods/edit/${barcode}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -258,8 +271,17 @@
                     document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
                     document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
                 })
-            })
+            }
 
+            <% if(barcode) { %>
+                getItem(<%=barcode%>)
+            <% } %>
+
+            document.getElementById('itemcode').addEventListener('change', function (event) {
+                let barcode = document.getElementById('itemcode').value
+                getItem(barcode)
+            })
+            
             const calculateTotalPrice = () => {
                 document.getElementById('totalpriceText').value = formatCurrency(document.getElementById('quantity').value * document.getElementById('purchaseprice').value)
                 document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
@@ -279,7 +301,7 @@
                 console.log('Submit Invoice')
                 const formData = new FormData(addPurchaseForm);
                 try {
-                    const response = await fetch('http://localhost:3000/data/purchases/add', {
+                    const response = await fetch('/data/purchases/add', {
                         method: 'POST',
                         body: formData,
                     });
@@ -296,7 +318,7 @@
                 console.log('Submit Purchase')
                 const formData = new FormData(addPurchaseForm);
                 try {
-                    const response = await fetch('http://localhost:3000/data/purchaseitems/add', {
+                    const response = await fetch('/data/purchaseitems/add', {
                         method: 'POST',
                         body: formData,
                     });
@@ -312,7 +334,7 @@
             const refreshData = () => {
                 console.log("Refresh Data")
                 let invoice = document.getElementById("invoice").value
-                fetch(`http://localhost:3000/data/purchases/edit/${invoice}`).then((response) => {
+                fetch(`/data/purchases/edit/${invoice}`).then((response) => {
                     return response.json();
                 }).then((response) => {
                     console.log(response.data[0])
@@ -320,7 +342,7 @@
                     document.getElementById('totalsum').value = response.data[0].totalsum
                 }).then(() => {
                     let barcode = document.getElementById('itemcode').value
-                    fetch(`http://localhost:3000/data/goods/edit/${barcode}`).then((response) => {
+                    fetch(`/data/goods/edit/${barcode}`).then((response) => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
@@ -333,7 +355,7 @@
                         document.getElementById('totalprice').value = document.getElementById('quantity').value * document.getElementById('purchaseprice').value
                     }).then(() => {
                         readPurchaseitemsParams.query = invoice
-                        fetch(`http://localhost:3000/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
+                        fetch(`/data/purchaseitems?${new URLSearchParams(readPurchaseitemsParams).toString()}`).then((response) => {
                             return response.json();
                         }).then((response) => {
                             let tablePurchases = ''
@@ -358,7 +380,7 @@
                 let invoice = document.getElementById("invoice").value;
                 if (formData.has('supplier') && formData.get('supplier') != '') {
                     try {
-                        const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`, {
+                        const response = await fetch(`/data/purchases/edit/${invoice}`, {
                             method: 'PUT',
                             body: formData,
                         });
@@ -366,12 +388,12 @@
                             throw new Error('Failed to submit invoice');
                         }
                         console.log('Invoice submitted successfully');
-                        window.location.href = 'http://localhost:3000/purchases'
+                        window.location.href = '/purchases'
                     } catch (error) {
                         console.error(error);
                     }
                 } else {
-                    window.location.href = 'http://localhost:3000/purchases'
+                    window.location.href = '/purchases'
                 }
             }
 
@@ -382,7 +404,7 @@
                 if (formData.has('itemcode')) {
 
                     try {
-                        const response = await fetch(`http://localhost:3000/data/purchases/edit/${invoice}`);
+                        const response = await fetch(`/data/purchases/edit/${invoice}`);
                         const data = await response.json();
                         if (data.data.length == 0) {
                             console.log('sampai sini data length 0');
