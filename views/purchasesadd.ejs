@@ -185,6 +185,7 @@
                     }
                     return response.json();
                 }).then((response) => {
+                    // console.log(response.time)
                     invoice.value = response.invoice
 
                     const date = new Date(response.time);

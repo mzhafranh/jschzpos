@@ -1040,7 +1040,7 @@ module.exports = function (db, io) {
                     if (err) {
                         console.error(err);
                     }
-                    // console.log(data.rows)
+                    console.log(data.rows)
                     res.status(200).json({
                         data: data.rows,
                         userRole: req.session.user.role,
@@ -1089,7 +1089,21 @@ module.exports = function (db, io) {
         try {
             const { invoice, time, operator } = req.body
             console.log(req.body)
-            db.query('INSERT INTO purchases (invoice, time, totalsum, operator) VALUES ($1, $2, $3, $4) RETURNING *', [invoice, time, 0, operator], (err, data) => {
+
+            const date = new Date(time);
+            const formattedDate = date.toLocaleString('default', {
+                timeZone: 'Asia/Bangkok',
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                fractionalSecondDigits: 3,
+                hour12: false
+            });
+            
+            db.query('INSERT INTO purchases (invoice, time, totalsum, operator) VALUES ($1, $2, $3, $4) RETURNING *', [invoice, formattedDate, 0, operator], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
@@ -1422,7 +1436,7 @@ module.exports = function (db, io) {
                 }
                 if (sortBy == 'invoice') {
                     sql += ` ORDER BY CAST(SUBSTRING(invoice FROM 'INV-PENJ(\\d{8})-(\\d+)') AS DATE) ${order},
-                                      CAST(SUBSTRING(invoice FROM 'INV-PENJ(\\d{8})-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
+                                      CAST(SUBSTRING(invoice FROM 'INV-PENJ\\d{8}-(\\d+)') AS INTEGER) ${order} LIMIT $${count++} OFFSET $${count++}`;
                 } else {
                     sql += ` ORDER BY ${sortBy} ${order} LIMIT $${count++} OFFSET $${count++}`;
                 }
@@ -1453,7 +1467,19 @@ module.exports = function (db, io) {
         try {
             const { invoice, time, pay, change, customer, operator } = req.body
             console.log(req.body)
-            db.query('INSERT INTO sales (invoice, time, totalsum, pay, change, customer, operator) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [invoice, time, 0, pay, change, customer, operator], (err, data) => {
+            const date = new Date(time);
+            const formattedDate = date.toLocaleString('default', {
+                timeZone: 'Asia/Bangkok',
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                fractionalSecondDigits: 3,
+                hour12: false
+            });
+            db.query('INSERT INTO sales (invoice, time, totalsum, pay, change, customer, operator) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [invoice, formattedDate, 0, pay, change, customer, operator], (err, data) => {
                 if (err) {
                     console.error(err)
                 }

@@ -255,8 +255,8 @@
                                 <td>${formatCurrency(item.totalsum)}</td>
                                 <td>${item.name ? item.name : '-'}</td>
                             `
-                            if(response.userRole == 'op'){
-                                if (response.userId == item.operator){
+                            if (response.userRole == 'op') {
+                                if (response.userId == item.operator) {
                                     htmlTbody += `
                                     <td><a href="/purchases/edit/${item.invoice}" class="btn btn-success btn-circle"><i class="fa-solid fa-pen-to-square"></i></a>
                                         <button type="button" class="btn btn-danger btn-circle" onClick="openDeleteModal('${item.invoice}')"><i class="fa-solid fa-trash-can"></i></button>

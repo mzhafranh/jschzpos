@@ -213,7 +213,22 @@ module.exports = function (db, io) {
     router.get('/purchases/edit/:invoice', helpers.isLoggedIn, (req, res) => {
         let invoice = req.params.invoice
         const mode = 'purchases'
-        res.render('purchasesedit', { mode, invoice, user: req.session.user })
+        if (req.session.user.role == 'op'){
+            db.query('SELECT * FROM purchases WHERE invoice = $1', [invoice], (err, data) => {
+                // console.log(data)
+                if (err) {
+                    console.error(err)
+                }
+                if (data.rows[0].operator == req.session.user.userid){
+                    res.render('purchasesedit', { mode, invoice, user: req.session.user })
+                }
+                else {
+                    res.redirect('/purchases')
+                }       
+            })
+        } else {
+            res.render('purchasesedit', { mode, invoice, user: req.session.user })
+        }
     })
 
     router.get('/customers', helpers.isLoggedIn, (req, res) => {
@@ -245,7 +260,22 @@ module.exports = function (db, io) {
     router.get('/sales/edit/:invoice', helpers.isLoggedIn, (req, res) => {
         let invoice = req.params.invoice
         const mode = 'sales'
+        if (req.session.user.role == 'op'){
+            db.query('SELECT * FROM sales WHERE invoice = $1', [invoice], (err, data) => {
+                // console.log(data)
+                if (err) {
+                    console.error(err)
+                }
+                if (data.rows[0].operator == req.session.user.userid){
+                    res.render('salesedit', { mode, invoice, user: req.session.user })
+                }
+                else {
+                    res.redirect('/sales')
+                }       
+            })
+        } else {
         res.render('salesedit', { mode, invoice, user: req.session.user })
+        }
     })
 
     router.get('/blank', (req, res) => {
