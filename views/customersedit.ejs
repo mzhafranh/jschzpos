@@ -73,7 +73,7 @@
 
         <script>
             const getCustomerData = () => {
-                fetch(`http://localhost:3000/data/customers/edit/<%=customerId%>`).then((response) => {
+                fetch(`/data/customers/edit/<%=customerId%>`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -91,11 +91,11 @@
             document.getElementById('editCustomerForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(editCustomerForm);
-                fetch(`http://localhost:3000/data/customers/edit/<%=customerId%>`, {
+                fetch(`/data/customers/edit/<%=customerId%>`, {
                     method: 'PUT',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/customers'
+                    window.location.href = '/customers'
                 })
             });
         </script>

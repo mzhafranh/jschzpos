@@ -173,7 +173,7 @@
             }
 
             const readData = (params) => {
-                fetch(`http://localhost:3000/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
+                fetch(`/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -425,7 +425,7 @@
             }
 
             const deleteUser = (unit) => {
-                fetch(`http://localhost:3000/data/units/delete/`, {
+                fetch(`/data/units/delete/`, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json',

@@ -199,7 +199,7 @@
             }
 
             const readData = (params) => {
-                fetch(`http://localhost:3000/data/goods?${new URLSearchParams(params).toString()}`).then((response) => {
+                fetch(`/data/goods?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -519,7 +519,7 @@
             }
 
             const deleteGood = (barcode) => {
-                fetch(`http://localhost:3000/data/goods/delete/`, {
+                fetch(`/data/goods/delete/`, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json',

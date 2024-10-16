@@ -116,7 +116,7 @@
             }
 
             const getUnitData = (params) => {
-                fetch(`http://localhost:3000/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
+                fetch(`/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -152,11 +152,11 @@
             document.getElementById('addGoodForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(addGoodForm);
-                fetch('http://localhost:3000/data/goods/add', {
+                fetch('/data/goods/add', {
                     method: 'POST',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/goods'
+                    window.location.href = '/goods'
                 })
             });
         </script>

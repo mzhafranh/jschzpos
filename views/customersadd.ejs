@@ -69,11 +69,11 @@
             document.getElementById('addCustomerForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(addCustomerForm);
-                fetch('http://localhost:3000/data/customers/add', {
+                fetch('/data/customers/add', {
                     method: 'POST',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/customers'
+                    window.location.href = '/customers'
                 })
             });
         </script>

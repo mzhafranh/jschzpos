@@ -91,11 +91,11 @@
             document.getElementById('addUserForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(addUserForm);
-                fetch('http://localhost:3000/data/users/add', {
+                fetch('/data/users/add', {
                     method: 'POST',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/users'
+                    window.location.href = '/users'
                 })
             });
         </script>

@@ -51,9 +51,6 @@ async function main() {
       next();
     });
 
-
-
-
     var debug = require('debug')('pos:server');
     var http = require('http');
 

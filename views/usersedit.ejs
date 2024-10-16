@@ -82,7 +82,7 @@
         <script>
 
             const getUserData = () => {
-                fetch(`http://localhost:3000/data/users/edit/<%=userId%>`).then((response) => {
+                fetch(`/data/users/edit/<%=userId%>`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -103,11 +103,11 @@
             document.getElementById('editUserForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(editUserForm);
-                fetch(`http://localhost:3000/data/users/edit/<%=userId%>`, {
+                fetch(`/data/users/edit/<%=userId%>`, {
                     method: 'PUT',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/users'
+                    window.location.href = '/users'
                 })
             });
         </script>

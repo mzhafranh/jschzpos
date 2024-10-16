@@ -114,7 +114,7 @@
             }
 
             const getData = (params) => {
-                fetch(`http://localhost:3000/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
+                fetch(`/data/units?${new URLSearchParams(params).toString()}`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -126,7 +126,7 @@
                         })
                         document.getElementById('unit').innerHTML = selectOptions
                     }).then(() => {
-                        fetch(`http://localhost:3000/data/goods/edit/<%=barcode%>`).then((response) => {
+                        fetch(`/data/goods/edit/<%=barcode%>`).then((response) => {
                             if (!response.ok) {
                                 throw new Error(`HTTP error! Status: ${response.status}`);
                             }
@@ -165,11 +165,11 @@
             document.getElementById('editGoodForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(editGoodForm);
-                fetch(`http://localhost:3000/data/goods/edit/<%=barcode%>`, {
+                fetch(`/data/goods/edit/<%=barcode%>`, {
                     method: 'PUT',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/goods'
+                    window.location.href = '/goods'
                 })
             });
         </script>

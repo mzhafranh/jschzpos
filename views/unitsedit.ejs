@@ -69,7 +69,7 @@
 
         <script>
             const getUnitData = () => {
-                fetch(`http://localhost:3000/data/units/edit/<%=unitId%>`).then((response) => {
+                fetch(`/data/units/edit/<%=unitId%>`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -87,11 +87,11 @@
             document.getElementById('editUnitForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(editUnitForm);
-                fetch(`http://localhost:3000/data/units/edit/<%=unitId%>`, {
+                fetch(`/data/units/edit/<%=unitId%>`, {
                     method: 'PUT',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/units'
+                    window.location.href = '/units'
                 })
             });
         </script>

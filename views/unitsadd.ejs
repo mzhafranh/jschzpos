@@ -70,11 +70,11 @@
             document.getElementById('addUnitForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(addUnitForm);
-                fetch('http://localhost:3000/data/units/add', {
+                fetch('/data/units/add', {
                     method: 'POST',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/units'
+                    window.location.href = '/units'
                 })
             });
         </script>

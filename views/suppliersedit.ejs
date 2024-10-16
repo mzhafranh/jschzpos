@@ -73,7 +73,7 @@
 
         <script>
             const getSupplierData = () => {
-                fetch(`http://localhost:3000/data/suppliers/edit/<%=supplierId%>`).then((response) => {
+                fetch(`/data/suppliers/edit/<%=supplierId%>`).then((response) => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
@@ -91,11 +91,11 @@
             document.getElementById('editSupplierForm').addEventListener('submit', function (event) {
                 event.preventDefault()
                 const formData = new FormData(editSupplierForm);
-                fetch(`http://localhost:3000/data/suppliers/edit/<%=supplierId%>`, {
+                fetch(`/data/suppliers/edit/<%=supplierId%>`, {
                     method: 'PUT',
                     body: formData,
                 }).then((response) => {
-                    window.location.href = 'http://localhost:3000/suppliers'
+                    window.location.href = '/suppliers'
                 })
             });
         </script>
