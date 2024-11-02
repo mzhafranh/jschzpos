@@ -38,7 +38,7 @@ CREATE TABLE purchases (
 CREATE TABLE purchaseitems (
     id SERIAL PRIMARY KEY,
     invoice VARCHAR(20) REFERENCES purchases(invoice) ON DELETE CASCADE,
-    itemcode VARCHAR(20) REFERENCES goods(barcode),
+    itemcode VARCHAR(20) REFERENCES goods(barcode) ON UPDATE CASCADE,
     quantity INTEGER,
     purchaseprice NUMERIC(19,2),
     totalprice NUMERIC(19,2)
@@ -69,7 +69,7 @@ CREATE TABLE sales (
 CREATE TABLE saleitems (
     id SERIAL PRIMARY KEY,
     invoice VARCHAR(20) REFERENCES sales(invoice) ON DELETE CASCADE,
-    itemcode VARCHAR(20) REFERENCES goods(barcode), 
+    itemcode VARCHAR(20) REFERENCES goods(barcode) ON UPDATE CASCADE, 
     quantity INTEGER,
     sellingprice NUMERIC(19, 2),
     totalprice NUMERIC(19, 2)

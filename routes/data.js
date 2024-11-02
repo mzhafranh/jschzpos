@@ -1089,19 +1089,21 @@ module.exports = function (db, io) {
             console.log(req.body)
 
             const date = new Date(time);
-            const formattedDate = date.toLocaleString('default', {
-                timeZone: 'Asia/Bangkok',
-                year: 'numeric',
-                month: 'short',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                fractionalSecondDigits: 3,
-                hour12: false
-            });
             
-            db.query('INSERT INTO purchases (invoice, time, totalsum, operator) VALUES ($1, $2, $3, $4) RETURNING *', [invoice, formattedDate, 0, operator], (err, data) => {
+            //For Linux
+            // const formattedDate = date.toLocaleString('default', {
+            //     timeZone: 'Asia/Bangkok',
+            //     year: 'numeric',
+            //     month: 'short',
+            //     day: '2-digit',
+            //     hour: '2-digit',
+            //     minute: '2-digit',
+            //     second: '2-digit',
+            //     fractionalSecondDigits: 3,
+            //     hour12: false
+            // });
+            
+            db.query('INSERT INTO purchases (invoice, time, totalsum, operator) VALUES ($1, $2, $3, $4) RETURNING *', [invoice, date, 0, operator], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
@@ -1466,18 +1468,21 @@ module.exports = function (db, io) {
             const { invoice, time, pay, change, customer, operator } = req.body
             console.log(req.body)
             const date = new Date(time);
-            const formattedDate = date.toLocaleString('default', {
-                timeZone: 'Asia/Bangkok',
-                year: 'numeric',
-                month: 'short',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                fractionalSecondDigits: 3,
-                hour12: false
-            });
-            db.query('INSERT INTO sales (invoice, time, totalsum, pay, change, customer, operator) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [invoice, formattedDate, 0, pay, change, customer, operator], (err, data) => {
+
+            //For Linux
+            // const formattedDate = date.toLocaleString('default', {
+            //     timeZone: 'Asia/Bangkok',
+            //     year: 'numeric',
+            //     month: 'short',
+            //     day: '2-digit',
+            //     hour: '2-digit',
+            //     minute: '2-digit',
+            //     second: '2-digit',
+            //     fractionalSecondDigits: 3,
+            //     hour12: false
+            // });
+
+            db.query('INSERT INTO sales (invoice, time, totalsum, pay, change, customer, operator) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [invoice, date, 0, pay, change, customer, operator], (err, data) => {
                 if (err) {
                     console.error(err)
                 }
